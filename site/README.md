@@ -12,13 +12,19 @@ candidate and its CI. Keep claims aligned with the compatibility and telemetry
 documents; never substitute real readings or screenshots containing user data.
 
 The GitHub repository holds the canonical page source. Sites publication uses a
-separate checkout with these four assets under `dist/` and its own hosting manifest.
+separate checkout with `index.html`, `style.css`, `script.js`, `icon.svg`,
+`robots.txt`, `sitemap.xml`, `social-card.png`, and `404.html` under `dist/`, plus its own hosting manifest.
 Copy changes there, verify the page, and use the Sites source/version workflow.
 Do not run that workflow against this repository's Git remote. This site was made
 public at the maintainer's request. Preserve that audience on subsequent updates.
 
 Verification: `npm run test:landing` from the repository root uses the existing
 Playwright dependency. Set `CHROME_EXECUTABLE_PATH` when needed, as for UI tests.
+
+The [SEO plan](../references/seo-plan.md) defines positioning, crawl checks,
+Search Console setup, a first-month measurement cadence, and publishing ownership.
+Regenerate `social-card.png` with `node scripts/render_social_card.mjs` when needed.
+Search Console verification and actual indexing remain separate from deployment.
 
 ## Design choices
 

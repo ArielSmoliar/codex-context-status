@@ -94,6 +94,8 @@ templates. Its P01–P03 slots are placeholders, not enrolled users.
 
 The [new-user landing page source](site/README.md) provides a capability tour,
 interactive synthetic examples, and pinned installation commands.
+The [SEO plan](references/seo-plan.md) covers search intent, technical setup,
+Search Console verification, and the first month of measurement.
 
 ## Development
 

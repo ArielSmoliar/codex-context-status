@@ -5,7 +5,7 @@ import {resolve} from 'node:path';
 import {chromium} from 'playwright';
 
 const root=resolve('site');
-const types={'/':'text/html','/index.html':'text/html','/style.css':'text/css','/script.js':'text/javascript','/icon.svg':'image/svg+xml'};
+const types={'/':'text/html','/index.html':'text/html','/style.css':'text/css','/script.js':'text/javascript','/icon.svg':'image/svg+xml','/robots.txt':'text/plain','/sitemap.xml':'application/xml','/social-card.png':'image/png','/404.html':'text/html'};
 const server=createServer(async(req,res)=>{
   if(!Object.hasOwn(types,req.url)){res.writeHead(404).end();return;}
   try{res.setHeader('Content-Type',types[req.url]);res.end(await readFile(resolve(root,req.url==='/'?'index.html':req.url.slice(1))));}
@@ -25,6 +25,23 @@ try{
     return route.continue();
   });
   await page.goto(origin);
+  const canonical='https://codex-context-status.major-cabin-5392.chatgpt.site/';
+  assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'),canonical);
+  assert.equal(await page.locator('meta[property="og:url"]').getAttribute('content'),canonical);
+  assert.equal(await page.locator('meta[property="og:image"]').getAttribute('content'),canonical+'social-card.png');
+  const structured=JSON.parse(await page.locator('script[type="application/ld+json"]').textContent());
+  assert.equal(structured['@graph'].every(item=>item.url===canonical),true);
+  assert.match(await readFile(resolve(root,'robots.txt'),'utf8'),new RegExp(`Sitemap: ${canonical.replaceAll('.','\\.')}sitemap.xml`));
+  assert.match(await readFile(resolve(root,'sitemap.xml'),'utf8'),new RegExp(`<loc>${canonical.replaceAll('.','\\.')}</loc>`));
+  const social=await readFile(resolve(root,'social-card.png'));
+  assert.equal(social.readUInt32BE(16),1200);assert.equal(social.readUInt32BE(20),630);
+  const noScript=await browser.newContext({javaScriptEnabled:false});
+  try{
+    const staticPage=await noScript.newPage();await staticPage.goto(origin);
+    assert.equal(await staticPage.getByRole('heading',{name:'Visibility into your Codex session.',exact:true}).isVisible(),true);
+    assert.equal(await staticPage.getByRole('link',{name:'Full installation guide',exact:false}).isVisible(),true);
+    assert.match(await staticPage.locator('body').textContent(),/It estimates capacity using the last recorded request/);
+  }finally{await noScript.close();}
   for(const width of [360,768,1440]){
     await page.setViewportSize({width,height:1000});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`overflow at ${width}`);
@@ -63,5 +80,5 @@ try{
     await page.setViewportSize({width:390,height:844});
     await page.screenshot({path:resolve(process.env.LANDING_SCREENSHOTS,'landing-mobile.png'),fullPage:true});
   }
-  console.log('Landing page passed: responsive layout, scenario states, keyboard FAQ, install anchor, copy/fallback, no external requests or JS errors.');
+  console.log('Landing page passed: SEO consistency, readable without JS, responsive layout, scenario states, keyboard FAQ, install anchor, copy/fallback, no external requests or JS errors.');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
