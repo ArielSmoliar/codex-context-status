@@ -1,5 +1,7 @@
 # New-user landing page
 
+Public page: https://codex-context-status.major-cabin-5392.chatgpt.site
+
 Buildless HTML, CSS, and JavaScript. Serve this directory with a static HTTP server
 to preview it. No chat access, analytics, external assets, or runtime dependencies.
 The interactive inspector is an explicitly synthetic, simplified illustration.
@@ -12,8 +14,8 @@ documents; never substitute real readings or screenshots containing user data.
 The GitHub repository holds the canonical page source. Sites publication uses a
 separate checkout with these four assets under `dist/` and its own hosting manifest.
 Copy changes there, verify the page, and use the Sites source/version workflow.
-Do not run that workflow against this repository's Git remote. A deployed preview
-starts owner-private; public access is a separate audience decision.
+Do not run that workflow against this repository's Git remote. This site was made
+public at the maintainer's request. Preserve that audience on subsequent updates.
 
 Verification: `npm run test:landing` from the repository root uses the existing
 Playwright dependency. Set `CHROME_EXECUTABLE_PATH` when needed, as for UI tests.

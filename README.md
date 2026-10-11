@@ -2,6 +2,8 @@
 
 A local context inspector for Codex desktop, with horizontal capacity and cache bars, in-place refresh, and guidance for when to prepare a session handoff.
 
+[Explore the capabilities and interactive examples](https://codex-context-status.major-cabin-5392.chatgpt.site).
+
 ## What it shows
 
 - Estimated context usage and remaining capacity from the latest recorded request.
