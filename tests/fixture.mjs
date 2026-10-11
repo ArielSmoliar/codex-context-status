@@ -1,4 +1,4 @@
-import {mkdtemp, mkdir, writeFile, rm} from 'node:fs/promises';
+import {mkdtemp, mkdir, writeFile, appendFile, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 
@@ -21,5 +21,6 @@ export async function makeFixture(used=60000) {
     await writeFile(log,records.map(record=>JSON.stringify(record)).join('\n')+'\n');
   }
   await write(used);
-  return {id,home,write,cleanup:()=>rm(home,{recursive:true,force:true})};
+  const append=record=>appendFile(log,JSON.stringify({...record,timestamp:new Date().toISOString()})+'\n');
+  return {id,home,write,append,cleanup:()=>rm(home,{recursive:true,force:true})};
 }

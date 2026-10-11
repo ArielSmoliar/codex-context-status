@@ -4,6 +4,7 @@ from pathlib import Path
 import sqlite3
 import tempfile
 import unittest
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('context_status', Path(__file__).resolve().parents[1] / 'scripts/context_status.py')
 mod = importlib.util.module_from_spec(spec)
@@ -73,6 +74,70 @@ class Tests(unittest.TestCase):
         r = self.read([context(), usage(), context('different')])
         self.assertIsNone(r['reported_context_window'])
         self.assertIsNone(r['capacity_estimate'])
+        self.assertEqual(r['latest_usage_model'], 'example')
+        self.assertEqual(r['usage_state'], 'awaiting_model_usage')
+        self.assertEqual(r['model_switch_count'], 1)
+        self.assertEqual(r['model_switches'][0]['to_model'], 'different')
+
+    def test_switch_back_does_not_reuse_old_model_measurement(self):
+        r = self.read([context(), usage(), context('different'), context()])
+        self.assertEqual(r['usage_state'], 'awaiting_model_usage')
+        self.assertEqual(r['model_switch_count'], 2)
+        self.assertIsNone(r['capacity_estimate'])
+
+    def test_empty_usage_does_not_clear_model_waiting_state(self):
+        r = self.read([context(), usage(), context('different'), usage({}, 2000)])
+        self.assertEqual(r['usage_state'], 'awaiting_model_usage')
+        self.assertEqual(r['latest_usage_model'], 'example')
+        self.assertIsNone(r['capacity_estimate'])
+        r = self.read([context(), usage({'unrecognized_field': 3}, 2000)])
+        self.assertEqual(r['status'], 'unavailable')
+
+    def test_late_previous_turn_usage_cannot_be_attributed_to_new_model(self):
+        late = event('token_usage_record', {'thread_id': 'test-chat', 'turn_id': 'turn1',
+                     'usage': {'input_tokens': 999, 'total_tokens': 999}})
+        r = self.read([context(), usage(), context('new-model', 'turn2'), late])
+        self.assertEqual(r['latest_usage_model'], 'example')
+        self.assertEqual(r['latest_request']['total_tokens'], 120)
+        self.assertEqual(r['usage_state'], 'awaiting_model_usage')
+        fresh = event('token_usage_record', {'thread_id': 'test-chat', 'turn_id': 'turn2',
+                      'usage': {'input_tokens': 300, 'output_tokens': 20, 'total_tokens': 320}})
+        r = self.read([context(), usage(), context('new-model', 'turn2'), late, fresh])
+        self.assertEqual(r['latest_usage_model'], 'new-model')
+        self.assertEqual(r['usage_state'], 'recorded')
+        self.assertIsNone(r['capacity_estimate'])  # still no new runtime limit
+        r = self.read([context(), usage(), context('new-model', 'turn2'), fresh, usage(window=2000)])
+        self.assertIsNotNone(r['capacity_estimate'])
+
+    def test_switch_history_bounded_and_duplicate_contexts_ignored(self):
+        records = [context(), usage()]
+        for n in range(15):
+            records.extend([context('model'+str(n)), context('model'+str(n))])
+        r = self.read(records)
+        self.assertEqual(r['model_switch_count'], 15)
+        self.assertEqual(len(r['model_switches']), 10)
+
+    def test_diagnostics_survive_missing_usage(self):
+        r = self.read([context()])
+        self.assertEqual(r['model'], 'example')
+        checks = {x['label']: x['status'] for x in r['diagnostics']['checks']}
+        self.assertEqual(checks['Session identity'], 'observed')
+        self.assertEqual(checks['Model metadata'], 'observed')
+        self.assertEqual(checks['Usage events'], 'not_observed')
+
+    def test_collect_reports_missing_home_and_identity_without_paths(self):
+        r = mod.collect(Path(self.tmp.name) / 'private-missing-directory', 'test-chat')
+        self.assertEqual(r['diagnostics']['failure_code'], 'home_unavailable')
+        self.assertNotIn('private-missing-directory', json.dumps(r))
+        self.read([context(), usage()])
+        r = mod.collect(Path(self.tmp.name), 'other-chat', self.path)
+        self.assertEqual(r['diagnostics']['failure_code'], 'identity_mismatch')
+        self.assertNotIn(str(self.path), json.dumps(r))
+        with patch.object(mod, 'inspect', side_effect=PermissionError('/private/SECRET-PATH')):
+            r = mod.collect(Path(self.tmp.name), 'test-chat', self.path)
+        self.assertEqual(r['diagnostics']['failure_code'], 'read_failed')
+        self.assertEqual(r['diagnostics']['checks'][1]['status'], 'not_checked')
+        self.assertNotIn('SECRET-PATH', json.dumps(r))
 
     def test_new_usage_record_and_current_turn_totals(self):
         record = event('token_usage_record', {'thread_id': 'test-chat', 'turn_id': 'turn1',

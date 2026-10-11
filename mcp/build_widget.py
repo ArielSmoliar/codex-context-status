@@ -17,7 +17,7 @@ reset = '''
       if (data.thread_id && next.thread_id !== data.thread_id) throw new Error('Chat binding changed');
       data = next;
       for (const name of ['capacity-legend','accounting','provenance']) section(name).replaceChildren();
-      for (const chart of root.querySelectorAll('[data-chart]')) {chart.replaceChildren();chart.hidden=false;}
+      for (const chart of root.querySelectorAll('[data-chart]')) {chart.replaceChildren();chart.removeAttribute('hidden');}
       section('capacity-scale').hidden=false;
       section('measurements').hidden=true;
       el('unavailable').hidden=true;

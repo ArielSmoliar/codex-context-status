@@ -28,6 +28,7 @@ try{
      const reply=result=>e.source.postMessage({jsonrpc:'2.0',id:m.id,result},'*');
      if(m.method==='ui/initialize')reply({hostContext:{theme:'light'}});
      if(m.method==='ui/notifications/initialized')e.source.postMessage({jsonrpc:'2.0',method:'ui/notifications/tool-result',params:initial},'*');
+     if(m.method==='ui/notifications/size-changed' && m.params?.height)document.querySelector('iframe').style.height=m.params.height+'px';
      if(m.method==='tools/call'){
        try{reply(await window.readTool(m.params));}
        catch{e.source.postMessage({jsonrpc:'2.0',id:m.id,error:{message:'fixture error'}},'*');}
@@ -40,12 +41,12 @@ try{
  await frame.getByText(/Continue this session/).waitFor();
  const raw=page.frames()[1];
  await raw.evaluate(()=>window.originalRoot=document.getElementById('context-status-inspector'));
- await frame.locator('summary').click();
+ await frame.getByText('Token accounting & provenance',{exact:true}).click();
  await fixture(85000);
  await frame.getByRole('button',{name:'Refresh context status'}).click();
  await frame.getByText(/Prepare a handoff/).waitFor();
  assert.equal(await raw.evaluate(()=>window.originalRoot===document.getElementById('context-status-inspector')),true);
- assert.equal(await frame.locator('details').getAttribute('open'),'');
+ assert.equal(await frame.locator('[data-section="accounting-details"]').getAttribute('open'),'');
  assert.equal(await frame.locator('tbody tr').count(),6);
  assert.equal(await frame.locator('[data-chart="capacity"] rect').count(),4);
  assert.equal(await page.locator('iframe').count(),1);
@@ -102,6 +103,33 @@ try{
  await page.screenshot({path:home+'/auto-refresh-narrow.png'});
  assert.deepEqual(errors,[]);
  assert.equal((await page.evaluate(()=>window.bridgeMethods)).some(x=>x==='ui/message'),false);
+ await toggle.uncheck();
+ await sandbox.append({type:'turn_context',payload:{model:'Second model',effort:'medium',turn_id:'two'}});
+ await frame.getByRole('button',{name:'Refresh context status'}).click();
+ await frame.getByText('Waiting for usage from Second model. Latest measurements belong to Test model.').waitFor();
+ assert.equal(await frame.locator('[data-chart="capacity"]').isVisible(),false);
+ await frame.getByText('Latest request model: Test model · Before the model change').waitFor();
+ await frame.getByText('Telemetry checks & model changes',{exact:true}).click();
+ await frame.getByText(/Test model → Second model/).waitFor();
+ assert.match(await frame.locator('[data-section="diagnostics"]').innerText(),/Not observed/);
+ if(process.env.TEST_SCREENSHOT) {
+   await frame.getByText('Token accounting & provenance',{exact:true}).click();
+   await page.setViewportSize({width:800,height:1000});
+   await page.screenshot({path:process.env.TEST_SCREENSHOT,fullPage:true});
+ }
+ await sandbox.append({type:'event_msg',payload:{type:'token_count',info:{model_context_window:200000,last_token_usage:{input_tokens:20000,cached_input_tokens:15000,output_tokens:1000,total_tokens:21000}}}});
+ await frame.getByRole('button',{name:'Refresh context status'}).click();
+ await frame.getByText('Latest request model: Second model',{exact:true}).waitFor();
+ assert.equal(await frame.locator('[data-field="model-notice"]').isVisible(),false);
+ assert.equal(await frame.locator('[data-chart="capacity"]').isVisible(),true);
+ assert.equal(await frame.locator('[data-section="model-switches"] li').count(),1);
+ await fixture(0,false);
+ await frame.getByRole('button',{name:'Refresh context status'}).click();
+ await frame.getByText('The verified log contains no supported usage measurements.').waitFor();
+ assert.equal(await frame.locator('[data-section="diagnostics"]').isVisible(),true);
+ assert.equal(await frame.locator('[data-section="model-switches"] li').count(),0);
+ assert.deepEqual(errors,[]);
+ console.log('PASS: model change waiting state, cache attribution, history, recovery, diagnostics without usage');
  console.log('PASS: auto-refresh enabled by default, timer refresh, same DOM, hidden pause/resume, off stops, 3-error stop, reenable recovery');
  console.log('PASS: real stdio refresh, same DOM, preserved details, no new chat messages, 80/90% guidance, retry, unavailable recovery, light/dark, 320px');
 }finally{await browser.close();await client.close();await sandbox.cleanup();}

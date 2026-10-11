@@ -7,7 +7,7 @@ The helper queries `state*.sqlite` read-only for the exact thread's `rollout_pat
 Supported local record shapes:
 
 - `event_msg`, payload type `token_count`: `info.last_token_usage`, `info.total_token_usage`, `info.model_context_window`; optional `rate_limits`.
-- `token_usage_record`: matching `thread_id`, `usage`, `turn_token_usage`, `thread_token_usage`. A later record supplies newer counts; the separately recorded window is retained only if no model change intervened.
+- `token_usage_record`: matching `thread_id`, `usage`, `turn_token_usage`, `thread_token_usage`. Usage with an explicit turn ID is accepted only for the currently recorded turn, preventing delayed prior-turn records from being attributed to a newly selected model; the separately recorded window is retained only if no model change intervened.
 - `turn_context`: model, effort, and current turn identity.
 - `compacted`, or `event_msg/context_compaction`: timestamps only.
 
@@ -32,3 +32,9 @@ The user chose a compact inspector after consultation with Impeccable: capacity 
 Keep this as a diagnostic chart: no oversized summary metrics, nested cards, unmeasured claims, or animated entrance. The MCP App preserves disclosure state while refreshing. Its Refresh and default-on Auto-refresh use `tools/call` to read fresh telemetry into the same view; they do not start an agent turn. Auto-refresh runs every 15 seconds while visible, pauses while hidden, and stops after three consecutive failures.
 
 The **inline fallback** uses `window.openai.sendFollowUpMessage({prompt, title})`, which may require host confirmation and creates a new snapshot in the chat. It cannot update the old report in place and does not offer automatic refresh. Preserve this distinction when describing the two modes. Report generation must never modify session telemetry.
+
+## Model provenance and compatibility evidence
+
+`latest_usage_model` identifies the model recorded when accepted usage arrived. `usage_state` distinguishes recorded usage, waiting after a model switch, waiting after compaction, and absent usage. Model transitions have a total count and a bounded list of the latest ten transitions; duplicate metadata is not a transition. Switching away and back still requires fresh usage. Empty or unrecognized counter dictionaries do not satisfy that requirement. Legacy token-count records without explicit turn IDs rely on log order.
+
+`diagnostics` reports observed fields, fields not observed in the current snapshot, and checks not performed after a read or identity failure. It does not declare a Codex release incompatible just because telemetry is absent. Failure codes distinguish missing home, unresolved session, identity mismatch, and read failure. Public failure messages exclude exception paths.
