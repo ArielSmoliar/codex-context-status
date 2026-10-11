@@ -80,8 +80,10 @@ python3 scripts/prepare_validation.py --output /tmp/context-status-trial
 ```
 
 Open the generated `demo.html` and `protocol.md`. Generation makes no model calls
-and reads no chats. It does **not** establish handoff quality: model trials and
-outside-user adoption remain unverified. Use the [results template](references/validation-results.md)
+and reads no chats. It does **not** establish handoff quality. The first
+[agent-reviewed CLI smoke run](references/validation-smoke-2026-10-11.md) passed all
+six synthetic cases; real-task effectiveness and outside-user adoption remain
+unverified. Use the [results template](references/validation-results.md)
 to keep baseline, assisted, and synthetic observations separate.
 
 ## Development

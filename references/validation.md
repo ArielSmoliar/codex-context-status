@@ -3,7 +3,9 @@
 This kit tests whether another person can install context-status and continue work
 in a fresh chat. It adds no product features. The generator is offline: it creates
 synthetic files, never reads Codex logs, and never starts a model, modifies Codex
-configuration, or contacts participants. **Model trials and the pilot are NOT RUN.**
+configuration, or contacts participants. Initial agent-reviewed CLI smoke trials
+are recorded in the [October 11 report](validation-smoke-2026-10-11.md).
+**The human-reviewed desktop trials and outside-user pilot are NOT RUN.**
 
 ## Prepare a candidate
 
@@ -121,6 +123,12 @@ For a **full preparation-and-resumption trial** (01–05):
    `source-history.txt` as background. Submit the canonical `prepare-prompt.txt`.
 2. Score the produced handoff against the rubric **before editing it**. Record
    omitted/incorrect facts. Review it and record every correction separately.
+   Preserve the original output. If it names the source workspace's absolute path,
+   map that path to the intended receiver copy and record this as a relocation
+   correction. State explicitly that relative paths refer to the supplied receiver
+   workspace. Do not carry facilitator paths into the receiver or change task facts
+   to match expected outcomes. This mapping is for controlled fixture copies;
+   never assume two real repositories are interchangeable.
 3. Insert that actual reviewed output into `resume-template.txt`. Append the
    `current_request` from the rubric. Do not substitute the canned example.
 4. Open a fresh chat in `receivers/NN`, provide only that input, and score what
@@ -131,6 +139,11 @@ For a **resume-only smoke trial**, use `resume-example.txt` from the facilitator
 folder as input. Label the result resume-only: the canned handoff does not test
 preparation. Case 06 is always resume-only, using the untouched missing placeholder
 and empty receiver workspace; success is asking for the actual handoff.
+
+Record who reviewed the handoff. An agent-reviewed CLI smoke run can identify
+protocol problems, but does not complete the human review or desktop trial. Keep
+that result separate from participant transitions and document any extra boundary
+instructions supplied to the model.
 
 | Case (evaluator only) | Critical behavior |
 | --- | --- |

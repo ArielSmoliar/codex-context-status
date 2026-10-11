@@ -7,7 +7,7 @@ fields mean unknown, not success. Participant reviews any shared observations.
 
 - Candidate full SHA / CI link / result / date:
 - Kit SOURCE.json hashes / checkout dirty? / kit generation status:
-- Participant alias / evaluator / OS / desktop build:
+- Participant alias / evaluator / OS / desktop build or CLI version:
 - Model / effort / trial date:
 - Mode: full preparation-and-resumption / resume-only / usual baseline / assisted pilot
 - Case number or task category (evaluator only):
@@ -27,7 +27,9 @@ fields mean unknown, not success. Participant reviews any shared observations.
 
 - Condition: baseline / assisted / synthetic
 - Preparation run? / raw output scored? / omissions or unsupported claims:
-- Human corrections before transfer (do not hide preparation failures):
+- Handoff reviewer: human / agent / not reviewed:
+- Corrections before transfer, including workspace relocation (do not hide preparation failures):
+- Original output preserved? / extra boundary instructions supplied?:
 - Actual reviewed handoff used? / canned example used? / workspace state change:
 - First next action observed / exchange count / corrective questions / elapsed time:
 - Did the meter influence the decision? How? / direct prompt preference observed?:
