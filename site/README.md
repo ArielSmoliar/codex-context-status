@@ -6,10 +6,13 @@ Buildless HTML, CSS, and JavaScript. Serve this directory with a static HTTP ser
 to preview it. No chat access, analytics, external assets, or runtime dependencies.
 The interactive inspector is an explicitly synthetic, simplified illustration.
 
-The install example pins the pilot candidate to
-`b19f0a01a18c126a2c69615eef3f4285c73b2c61`. Update it only after reviewing the next
-candidate and its CI. Keep claims aligned with the compatibility and telemetry
-documents; never substitute real readings or screenshots containing user data.
+The primary install example uses the GitHub marketplace on `main`, matching
+[the plugin guide](../references/plugin.md). It requires a Codex CLI with plugin
+support and the default `~/.codex` data directory. Custom `CODEX_HOME` users are
+linked to the standalone installer; existing standalone users are linked to the
+migration steps. The guide also covers pinned installs, upgrades, and removal.
+Keep these instructions aligned with that guide and the compatibility record.
+Never substitute real readings or screenshots containing user data.
 
 The GitHub repository holds the canonical page source. Sites publication uses a
 separate checkout with `index.html`, `style.css`, `script.js`, `icon.svg`,

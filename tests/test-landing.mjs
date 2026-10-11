@@ -64,7 +64,11 @@ try{
   await page.evaluate(()=>{window.copied='';Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copied=text;}}});});
   await page.getByRole('button',{name:'Copy commands',exact:true}).click();
   const copied=await page.evaluate(()=>window.copied);
-  assert.match(copied,/b19f0a01a18c126a2c69615eef3f4285c73b2c61/);
+  assert.equal(copied,'codex plugin marketplace add ArielSmoliar/codex-context-status --ref main &&\ncodex plugin add context-status@codex-context-status');
+  assert.equal(await page.getByRole('link',{name:'Full installation guide',exact:false}).getAttribute('href'),'https://github.com/ArielSmoliar/codex-context-status/blob/main/references/plugin.md');
+  assert.equal(await page.getByRole('link',{name:'standalone installer',exact:true}).isVisible(),true);
+  assert.equal(await page.getByRole('link',{name:'migration steps',exact:true}).isVisible(),true);
+  assert.match(await page.locator('.install-requirements').innerText(),/CODEX_HOME/);
   assert.equal(copied.split('\n').slice(0,-1).every(line=>line.endsWith('&&')),true);
   assert.match(await page.locator('#copy-feedback').innerText(),/^Copied/);
   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw new Error('denied');}}}));

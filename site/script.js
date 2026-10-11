@@ -24,6 +24,6 @@ for(const button of document.querySelectorAll('[data-scenario]')){
 }
 byId('copy-command').addEventListener('click',async()=>{
   const code=byId('install-command');
-  try{await navigator.clipboard.writeText(code.textContent);byId('copy-feedback').textContent='Copied. Paste into your terminal to preview the installation.';}
+  try{await navigator.clipboard.writeText(code.textContent);byId('copy-feedback').textContent='Copied. Paste into your terminal to install the plugin.';}
   catch{const range=document.createRange();range.selectNodeContents(code);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);byId('copy-feedback').textContent='Copy unavailable here. Commands selected; use your keyboard to copy.';}
 });
