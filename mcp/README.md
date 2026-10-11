@@ -15,6 +15,8 @@ Follow the [repository installation instructions](../README.md#install). Invoke 
 
 These are advisory checkpoints chosen for this inspector, not OpenAI's automatic compaction threshold. The app cannot predict the next request's size or guarantee when a new session is needed. Save the goal, decisions, relevant files, and next step before moving sessions.
 
+The **Next step** selector adds task intent without inferring it from telemetry. Large steps get planning guidance; unrelated tasks get a new-chat recommendation independent of usage. Missing data and compaction counts alone do not justify a restart. **Handoff checklist & prompt** offers a checklist and a static prompt to copy into the current chat; it does not generate a summary or send a message. Clipboard failures select the text for manual copying. Controls and disclosures retain their state across refreshes.
+
 ## Implementation
 
 - `server.mjs`: official MCP SDK; two read-only tools and one HTML resource.

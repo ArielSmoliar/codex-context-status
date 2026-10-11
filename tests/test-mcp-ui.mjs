@@ -44,7 +44,7 @@ try{
  await frame.getByText('Token accounting & provenance',{exact:true}).click();
  await fixture(85000);
  await frame.getByRole('button',{name:'Refresh context status'}).click();
- await frame.getByText(/Prepare a handoff/).waitFor();
+ await frame.locator('[data-field="session-guidance"]').filter({hasText:'Prepare a handoff'}).waitFor();
  assert.equal(await raw.evaluate(()=>window.originalRoot===document.getElementById('context-status-inspector')),true);
  assert.equal(await frame.locator('[data-section="accounting-details"]').getAttribute('open'),'');
  assert.equal(await frame.locator('tbody tr').count(),6);
@@ -53,7 +53,7 @@ try{
  fail=true;
  await frame.getByRole('button',{name:'Refresh context status'}).click();
  await frame.getByText(/Previous snapshot retained/).waitFor();
- await frame.getByText(/Prepare a handoff/).waitFor();
+ await frame.locator('[data-field="session-guidance"]').filter({hasText:'Prepare a handoff'}).waitFor();
  fail=false;await fixture(93000);
  await frame.getByRole('button',{name:'Refresh context status'}).click();
  await frame.getByText(/Start a new session soon/).waitFor();
@@ -79,7 +79,7 @@ try{
  assert.equal(await toggle.isChecked(),true);
  await fixture(81000);
  await page.clock.runFor(15000);
- await frame.getByText(/Prepare a handoff/).waitFor();
+ await frame.locator('[data-field="session-guidance"]').filter({hasText:'Prepare a handoff'}).waitFor();
  assert.equal(calls,6);
  assert.equal(await raw.evaluate(()=>window.originalRoot===document.getElementById('context-status-inspector')),true);
  await raw.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'hidden'});document.dispatchEvent(new Event('visibilitychange'));});
@@ -140,6 +140,110 @@ try{
  assert.equal(await frame.locator('[data-section="diagnostics"]').isVisible(),true);
  assert.equal(await frame.locator('[data-section="model-switches"] li').count(),0);
  assert.deepEqual(errors,[]);
+ const advice=frame.locator('[data-field="session-guidance"]');
+ const reason=frame.locator('[data-field="session-reason"]');
+ const intent=frame.getByLabel('Next step');
+ // Advice and handoff remain usable even with no measurements.
+ assert.equal(await advice.innerText(),'Timing unavailable');
+ await intent.selectOption('unrelated');
+ assert.equal(await advice.innerText(),'Start a new session for the new task');
+ await frame.getByText('Handoff checklist & prompt',{exact:true}).click();
+ const prompt=frame.getByLabel('Prompt to paste into the current chat');
+ const promptText=await prompt.inputValue();
+ assert.match(promptText,/first concrete next action/);
+ assert.doesNotMatch(promptText,new RegExp(id));
+ // Explicit copy is the only write; no message or model call is sent.
+ const beforeCopy=calls;
+ await raw.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copiedPrompt=text;}}}));
+ await frame.getByRole('button',{name:'Copy handoff prompt'}).click();
+ await frame.getByText('Copied. Paste it into the current chat when ready.').waitFor();
+ assert.equal(await raw.evaluate(()=>window.copiedPrompt),promptText);
+ await raw.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw new Error('denied');}}}));
+ await frame.getByRole('button',{name:'Copy handoff prompt'}).click();
+ await frame.getByText(/Clipboard unavailable/).waitFor();
+ assert.equal(await prompt.evaluate(e=>document.activeElement===e && e.selectionStart===0 && e.selectionEnd===e.value.length),true);
+ assert.equal(calls,beforeCopy);
+ await fixture(60000);
+ await frame.getByRole('button',{name:'Refresh context status'}).click();
+ await frame.getByText('60.0% used · 40,000 remaining',{exact:true}).waitFor();
+ assert.equal(await intent.inputValue(),'unrelated');
+ assert.equal(await advice.innerText(),'Start a new session for the new task');
+ assert.equal(await frame.locator('[data-section="handoff-details"]').getAttribute('open'),'');
+ assert.equal(await prompt.inputValue(),promptText);
+ await toggle.check();
+ await fixture(70000);await page.clock.runFor(15000);
+ await frame.getByText('70.0% used · 30,000 remaining',{exact:true}).waitFor();
+ assert.equal(await intent.inputValue(),'unrelated');
+ assert.equal(await frame.locator('[data-section="handoff-details"]').getAttribute('open'),'');
+ assert.equal(await prompt.inputValue(),promptText);
+ await toggle.uncheck();
+ await intent.selectOption('large');
+ assert.equal(await advice.innerText(),'Plan the next step before continuing');
+ await intent.selectOption('continue');
+ for(const [used,title] of [[79999,'Continue this session'],[80000,'Prepare a handoff'],[89999,'Prepare a handoff'],[90000,'Start a new session soon'],[110000,'Start a new session soon']]){
+   await fixture(used);
+   await frame.getByRole('button',{name:'Refresh context status'}).click();
+   // Wait for the completed request, including when the title stays the same.
+   await frame.locator('[data-action="refresh"]:enabled').waitFor();
+   await frame.locator('[data-field="capacity-value"]').filter({hasText:(used/1000).toFixed(1)+'%'}).waitFor();
+   assert.equal(await advice.innerText(),title);
+ }
+ await fixture(85000);
+ await frame.getByRole('button',{name:'Refresh context status'}).click();
+ await advice.filter({hasText:'Prepare a handoff'}).waitFor();
+ await intent.selectOption('large');
+ assert.match(await reason.innerText(),/large step with limited estimated headroom/);
+ // All waiting states suppress capacity advice; never use the old estimate.
+ for(const [state,expected] of [['awaiting_model_usage','model changed'],['awaiting_post_compaction_usage','Compaction was recorded'],['awaiting_readable_usage','unreadable']]){
+   const result=await client.callTool({name:'read_context_status',arguments:{thread_id:id}});
+   result.structuredContent.usage_state=state;
+   result.structuredContent.capacity_estimate=null;
+   await page.evaluate(result=>document.querySelector('iframe').contentWindow.postMessage({jsonrpc:'2.0',method:'ui/notifications/tool-result',params:result},'*'),result);
+   await reason.filter({hasText:expected}).waitFor();
+   assert.equal(await advice.innerText(),'Timing unavailable');
+   assert.equal(await intent.inputValue(),'large');
+ }
+ const compacted=await client.callTool({name:'read_context_status',arguments:{thread_id:id}});
+ compacted.structuredContent.compactions_observed=4;
+ await page.evaluate(result=>document.querySelector('iframe').contentWindow.postMessage({jsonrpc:'2.0',method:'ui/notifications/tool-result',params:result},'*'),compacted);
+ await reason.filter({hasText:'count alone does not require a new chat'}).waitFor();
+ assert.equal(await advice.innerText(),'Prepare a handoff');
+ await frame.getByText('Token accounting & provenance',{exact:true}).click();
+ await frame.getByText('Telemetry checks & model changes',{exact:true}).click();
+ await intent.focus();
+ for(const width of [800,320]){
+   await page.setViewportSize({width,height:1100});
+   for(const theme of ['light','dark']){
+     await page.evaluate(theme=>document.querySelector('iframe').contentWindow.postMessage({jsonrpc:'2.0',method:'ui/notifications/host-context-changed',params:{theme}},'*'),theme);
+     assert.equal(await raw.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+     if(process.env.ADVICE_SCREENSHOTS)await page.screenshot({path:process.env.ADVICE_SCREENSHOTS+`/advice-${theme}-${width}.png`,fullPage:true});
+   }
+ }
+ assert.equal((await page.evaluate(()=>window.bridgeMethods)).some(x=>x==='ui/message'),false);
+ assert.deepEqual(errors,[]);
+ // The shared inline fallback also offers advice without needing MCP or clipboard access.
+ const fallback=await browser.newPage();
+ fallback.on('pageerror',e=>errors.push(e.message));
+ const template=await readFile(new URL('../assets/inspector.html',import.meta.url),'utf8');
+ await fallback.setContent(template.replace('@@CONTEXT_STATUS_DATA@@',JSON.stringify({status:'unavailable',reason:'No local log'})));
+ assert.equal(await fallback.locator('[data-field="session-guidance"]').innerText(),'Timing unavailable');
+ await fallback.getByLabel('Next step').selectOption('unrelated');
+ assert.equal(await fallback.locator('[data-field="session-guidance"]').innerText(),'Start a new session for the new task');
+ await fallback.getByText('Handoff checklist & prompt',{exact:true}).focus();
+ await fallback.keyboard.press('Enter');
+ assert.equal(await fallback.locator('[data-section="handoff-details"]').getAttribute('open'),'');
+ await fallback.getByRole('button',{name:'Copy handoff prompt'}).focus();
+ await fallback.keyboard.press('Enter');
+ await fallback.getByText(/Clipboard unavailable/).waitFor();
+ assert.equal(await fallback.getByLabel('Prompt to paste into the current chat').inputValue(),promptText);
+ assert.deepEqual(errors,[]);
+ await fallback.evaluate(()=>{window.openai={widgetState:{privateContent:{kind:'context-status-v1',detailsOpen:true}},setWidgetState:async state=>{window.savedState=state;}};});
+ await fallback.setContent(template.replace('@@CONTEXT_STATUS_DATA@@',JSON.stringify(compacted.structuredContent)));
+ assert.equal(await fallback.locator('[data-section="accounting-details"]').isVisible(),true);
+ assert.equal(await fallback.locator('[data-section="accounting-details"]').getAttribute('open'),'');
+ assert.equal(await fallback.locator('[data-section="handoff-details"]').getAttribute('open'),null);
+ await fallback.close();
+ console.log('PASS: task intent, threshold boundaries, unavailable guidance, compaction caveat, handoff copy/fallback, state retained, 320px');
  console.log('PASS: model change waiting state, cache attribution, history, recovery, diagnostics without usage');
  console.log('PASS: unreadable usage suppresses capacity advice, diagnostic evidence survives, valid telemetry recovers in place');
  console.log('PASS: auto-refresh enabled by default, timer refresh, same DOM, hidden pause/resume, off stops, 3-error stop, reenable recovery');
