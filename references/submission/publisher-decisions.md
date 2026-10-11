@@ -3,20 +3,20 @@
 These are concrete missing inputs, not completed attestations. Do not invent them
 or auto-fill the portal with assumptions.
 
-1. **Developer identity and ownership.** Confirm the verified individual or business
-   and the OpenAI organization/project that will own the listing. Account access
-   and verification have not been checked by this packet.
+1. **Developer identity and ownership.** Confirmed by the direct upload: Individual — ARIEL SMOLIAR.
+   Context Status 0.1.0 is a draft in the same account as the published Generate
+   Runbook plugin. No review or publication was requested.
 2. **First-party license.** Choose the license for the project. There is no root
    LICENSE file in the reviewed candidate. Dependency notices license those
    dependencies; they do not license this project's original code.
-3. **Published privacy notice.** Review the factual draft, confirm the final data
-   flow and support practices, supply an appropriate privacy-contact route, and
-   publish it at a stable HTTPS URL. Do not promise a retention period for data
+3. **Published privacy notice.** Review [the prepared privacy notice](../../docs/privacy.md), confirm the final data
+   flow and support practices, and publish it at a stable HTTPS URL. The publisher
+   selected ariel.smoliar@gmail.com for private privacy requests. Do not promise a retention period for data
    controlled by Codex or GitHub.
-4. **Terms of service.** Provide or approve terms identifying the publisher,
-   product scope, support route, license relationship, and applicable conditions.
-   Decide any jurisdiction, warranty, and liability provisions with appropriate
-   advice. No terms have been adopted or drafted as binding legal language here.
+4. **Terms of service.** Approve [the prepared terms](../../docs/terms.md), covering the
+   publisher, scope, requirements, support, and license relationship. They do not
+   choose an open-source license, governing jurisdiction, or a liability cap.
+   They are proposed text until the publisher approves publication.
 5. **Listing scope and availability.** Confirm Codex-only eligibility with OpenAI,
    then select supported platforms and countries based on the approved route.
 6. **Reviewer access and recording.** Agree on a synthetic local setup and record

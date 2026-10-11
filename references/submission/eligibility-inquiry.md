@@ -1,9 +1,9 @@
 # Local MCP eligibility inquiry
 
-**Draft — not sent.** Recipient: the maintainer's OpenAI contact, once identified.
+**Draft — not sent.** Recipient: OpenAI plugin support or the appropriate OpenAI representative.
 No account identifiers, personal logs, or live telemetry are needed as attachments.
 
-**Subject: Codex-only plugin listing eligibility: local telemetry inspector**
+**Subject: Local MCP support for Context Status — uploaded plugin draft**
 
 Hello,
 
@@ -20,9 +20,24 @@ does not return message bodies, instructions, tool output, or source paths.
 It adds no remote telemetry service. Initial tool results remain subject to
 Codex's own data handling; in-place refresh does not start a model turn.
 
-Before preparing a public directory submission, could you clarify:
+I have uploaded the current package directly through OpenAI Platform under my
+verified individual publisher identity. The draft was created successfully, but
+its blocking findings include:
 
-1. Is there an approved submission path for a local stdio MCP plugin?
+> Command MCP Server detected: We recommend using MCP servers with an URL. Please contact your OpenAI representative to submit plugins with command line MCPs.
+
+Plugin ID: `plugins_6acc2135f1008191a51a1284f57fb595`
+
+Draft: https://platform.openai.com/plugins/manage/plugins_6acc2135f1008191a51a1284f57fb595
+
+The uploaded draft is version 0.1.0. A 0.1.1 metadata correction is being prepared
+for the subtitle, icons, listing description, and required support/policy URLs.
+It does not change the local stdio architecture. No review has been submitted.
+
+Could you route this to the team supporting local MCP submissions and clarify:
+
+1. Can this draft be enabled for local command/stdio MCP review, and what package
+   configuration or approval is required?
 2. Does this telemetry-only extraction from a user-selected local session comply
    with the chat-log data-boundary requirement? If not, is there a supported
    host-provided telemetry resource or integration we should use?
