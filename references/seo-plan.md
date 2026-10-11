@@ -56,8 +56,9 @@ supports listing canonical, fully qualified URLs. Keep these signals consistent.
 | Metadata, canonical, sitemap, robots, social image | Maintainer | Live and verified October 11; all six non-HTML assets match source bytes. |
 | Unknown URL returns an actual 404 | Maintainer / hosting platform | Verified October 11: nonexistent path returns HTTP 404 with our noindex error page. |
 | GitHub About website | Maintainer | Set to the public landing URL October 11. |
-| Search Console property ownership | Maintainer's Google account | IN PROGRESS. URL-prefix property created; Google-issued HTML tag added to the home page. Ownership confirmation is pending. |
-| Sitemap submission and URL Inspection | Maintainer | PENDING verified property and live-file checks. |
+| Search Console property ownership | Maintainer's Google account | VERIFIED October 11 via the Google-issued HTML tag. Search Console confirmed ownership; retain the tag in future deployments. |
+| Sitemap submission | Maintainer | SUBMITTED October 11. Google accepted the request but currently reports “Couldn’t fetch” / “Sitemap could not be read”; successful processing remains unconfirmed. |
+| URL Inspection | Maintainer | Sitemap live test passed October 11 at 7:01 PM EDT: crawl allowed Yes, page fetch Successful. This does not prove sitemap processing or home-page indexing. |
 | Indexing / impressions / clicks | Google / measured in Search Console | UNKNOWN. A successful deployment does not establish indexing. |
 
 After deployment, check the anonymous responses for `/`, `/robots.txt`,
@@ -70,7 +71,7 @@ Deployment audit, October 11, 2026:
 
 - `/`: HTTP 200, `text/html`, complete page and metadata, no blocking
   `X-Robots-Tag`. A Googlebot user-agent request also returned 200; actual Google
-  crawling is still unverified.
+  crawling was unverified at launch; the subsequent sitemap live test succeeded.
 - `/robots.txt`, `/sitemap.xml`, and `/social-card.png`: HTTP 200 with appropriate
   text, XML, and PNG content types; exact source-byte matches. CSS, JavaScript,
   and SVG also match the repository source.
@@ -79,7 +80,9 @@ Deployment audit, October 11, 2026:
 - The host injects a Cloudflare challenge script into HTML. The only observed
   difference from source is that injection; raw HTML hashes therefore differ.
   This is hosting behavior, not project analytics. Recheck access in Search
-  Console before concluding that search engines can crawl reliably.
+  Console before concluding that search engines can crawl reliably. The October 11
+  sitemap live test subsequently confirmed a successful Google fetch; the Sitemaps
+  report still has an unresolved processing status.
 
 ## First 30 days
 
@@ -103,7 +106,8 @@ Deployment audit, October 11, 2026:
    demonstrated unanswered user question.
 
 The cadence is a plan, not a scheduled automation. There are no analytics events,
-outreach messages, paid placements, or Search Console changes in this implementation.
+outreach messages, or paid placements. Search Console ownership is now verified,
+and the sitemap has been submitted; processing is not yet confirmed.
 Install conversion and retention require participant evidence; they cannot be
 inferred from GitHub views, stars, or Search Console clicks.
 
