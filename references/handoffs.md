@@ -35,9 +35,11 @@ than inventing the task.
 
 ## Evaluating a handoff
 
-These are synthetic evaluation scenarios, not completed fresh-chat trials. Use
-them to evaluate a receiving chat with only the reviewed handoff, a synthetic
-workspace, and an explicit user request to resume. Do not give it the originating
+The first [agent-reviewed CLI smoke run](validation-smoke-2026-10-11.md) passed
+these six synthetic scenarios. Human-reviewed desktop transitions and effectiveness
+on real tasks remain unverified. Use the scenarios to evaluate a receiving chat
+with only the reviewed handoff, a synthetic workspace, and an explicit user request
+to resume. Do not give it the originating
 chat or the expected outcome. Record omissions, unnecessary questions, unsupported
 claims, and actions taken before declaring the transition successful.
 
