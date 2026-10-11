@@ -1,24 +1,25 @@
 # Proposed directory listing
 
-Draft copy for the local Codex product, conditional on eligibility. Not an active
-manifest and not a claim of OpenAI approval. Validate category and publisher
-identity in the portal before use.
+Listing copy included in the 0.1.1 package candidate, conditional on eligibility.
+The individual publisher identity was verified during direct upload. Productivity
+remains the selected category; the expanded description clarifies the main purpose
+for revalidation. Upload is not OpenAI approval.
 
 | Field | Proposed value |
 | --- | --- |
 | Stable package name | `context-status` |
 | Display name | Context Status |
 | Short description | Visibility into Codex sessions |
-| Developer name | Ariel Smoliar — must match verified identity |
+| Developer name | Ariel Smoliar |
 | Category | Productivity — confirm against the dashboard |
 | Website | https://codex-context-status.major-cabin-5392.chatgpt.site/ |
 | Support | https://github.com/ArielSmoliar/codex-context-status/issues |
-| Privacy policy / terms | Pending maintainer approval and publication; no URLs assigned |
+| Privacy policy / terms | `docs/privacy.md` and `docs/terms.md` at their manifest main-branch URLs; awaiting review and publication |
 | Primary / composer icon | `./assets/logo.svg` |
 | Dark primary / composer icon | `./assets/logo-dark.svg` |
 
-The icon paths apply only after copying this packet's assets into the plugin
-root. They are not currently declared by the installed package.
+Icons are now declared by `packaging/plugin.json` and copied into the generated
+plugin by the build. The existing installed 0.1.0 copy is unchanged.
 
 ## Long description
 

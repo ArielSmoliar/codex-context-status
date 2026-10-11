@@ -49,6 +49,10 @@ for (const name of files.filter(name => name.endsWith('.md'))) {
   await writeFile(join(skill, name), markdown);
 }
 for (const name of ['plugin.json', 'mcp.json']) await copyFile(join(root, 'packaging', name), join(output, name));
+await mkdir(join(output, 'assets'), {recursive: true});
+for (const name of ['logo.svg', 'logo-dark.svg']) {
+  await copyFile(join(root, 'packaging/assets', name), join(output, 'assets', name));
+}
 
 const result = await build({
   absWorkingDir: root, entryPoints: ['mcp/server.mjs'],

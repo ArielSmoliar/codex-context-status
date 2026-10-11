@@ -1,18 +1,21 @@
 # OpenAI plugin submission readiness
 
-Prepared October 11, 2026. **Not submitted; eligibility unresolved.** This is a
-review packet, not an uploadable plugin ZIP. It does not change the installed
-plugin, collect telemetry, contact OpenAI, or publish policy documents.
+Updated October 11, 2026. **Draft uploaded; not submitted for review or published.**
+The direct upload flow accepted plugin 0.1.0 under the verified individual
+publisher identity. [The draft](https://platform.openai.com/plugins/manage/plugins_6acc2135f1008191a51a1284f57fb595)
+reports the local command MCP server as a blocking finding.
 
-Candidate: plugin 0.1.0 from
-`0b6b3bfd5e915f041c64e7f2009c850bd4fdfce3` (merged PR #13).
-The GitHub installation remains the supported distribution path.
+This directory contains supporting review documents, not an uploadable plugin
+ZIP. The generated package is `plugins/context-status/`. Version 0.1.1 prepares
+the listing corrections; its policy pages must be approved and available at the
+manifest's URLs before a replacement upload. GitHub installation remains the
+supported distribution path. No OpenAI inquiry has been sent.
 
-## Resolve eligibility before preparing a portal upload
+## Resolve eligibility before submitting for review
 
 | Question | Current evidence | Required next action |
 | --- | --- | --- |
-| Local MCP transport | The package runs a local stdio server. The normal public submission route requires a remote HTTPS endpoint; the package guide directs local-server developers to their OpenAI contact. | Confirm an approved local MCP submission route. Do not tunnel or upload logs to qualify. |
+| Local MCP transport | The live portal accepted the ZIP as a draft but reports: “Command MCP Server detected” and requests an OpenAI representative for submission. | Confirm an approved local MCP submission route. Do not tunnel or upload logs to qualify. |
 | Session-log access | The reader locates the exact requested chat, reads and parses its JSONL records, and returns allowlisted telemetry. It does not reconstruct conversation text, but the underlying file contains it. The guidelines restrict MCP access to full chat logs. | Ask whether this specific telemetry extraction is eligible, or whether a host-provided telemetry resource is required. Do not assume allowlisting grants an exception. |
 | Codex-only platform scope | The inspector needs local Codex storage and MCP Apps. Guidelines call for ChatGPT desktop and mobile reliability. | Confirm whether a Codex-desktop-only listing is supported. Do not claim web/mobile compatibility. |
 
@@ -43,24 +46,20 @@ to send it to an existing OpenAI contact or obtain the appropriate support route
 | Item | Status |
 | --- | --- |
 | Eligibility for local transport, log access, and Codex-only scope | Awaiting OpenAI guidance; blocks the ordinary submission path. |
-| Verified developer identity and owning organization/project | Not checked in the Platform account. Display name must match the selected verified identity. |
-| Listing metadata | Draft prepared. Current manifest subtitle is 40 characters; submission limit is 30. Long description and listing icon fields are not yet present. |
-| Product and support URLs | Existing website and GitHub issues page proposed in listing copy. |
-| Privacy and terms URLs | No final published pages supplied. Both are required for MCP review. Do not use invented URLs or draft documents as approved policies. |
+| Verified developer identity | Direct upload used Individual — ARIEL SMOLIAR; Generate Runbook is already published in the same account. |
+| Listing metadata | Version 0.1.1 adds a 30-character subtitle, long description, and bundled light/dark listing and composer icons. Portal revalidation is pending. |
+| Product and support URLs | Manifest now points to the public product website and GitHub issues. |
+| Privacy and terms URLs | `docs/privacy.md` and `docs/terms.md` prepared for publisher review. Manifest uses their stable main-branch GitHub URLs; the private contact is confirmed; review and merge/publication must happen before upload. |
 | First-party license | No root LICENSE file was found at the candidate revision. Maintainer must choose licensing; do not infer MIT from third-party notices. |
 | Desktop compatibility | One documented macOS build. Default `~/.codex` only for the plugin; custom-home users need the standalone installer for in-place Refresh. |
 | Reviewer cases and recording | Eight cases drafted; reviewer executions and a video remain NOT RUN / NOT RECORDED. |
 | Independent-user evidence | P01–P03 pilot is prepared, not run. It is not a documented portal requirement, but remains useful release evidence. |
 
-The source package intentionally stays unchanged until the eligibility path is
-known. After approval of the path, resolve publisher decisions, publish accurate
-policies, incorporate the listing/review fields and icons into `packaging/`, bump
-the plugin version, and regenerate with `npm run build`. Re-run product and plugin
-lifecycle checks. Then exercise the agreed reviewer setup and record the video.
+Before a replacement upload, review the policies and merge the pages so their main-branch URLs resolve, and validate the package.
+The local MCP declaration must remain included. Do not submit a skills-only
+placeholder to bypass the command-MCP finding. Revalidate the uploaded 0.1.1
+metadata and preserve any remaining findings in the inquiry.
 
-Upload through [OpenAI Platform Plugins](https://platform.openai.com/plugins)
-only after the required gaps are resolved. If the plugin uses MCP, include it in
-the initial submission: the documented process cannot add MCP to an existing
-skills-only plugin. Do not submit a skills-only placeholder to bypass eligibility.
-Portal validation, policy attestations, review approval, and publication remain
-separate steps. No approval or acceptance is implied by this packet.
+The [review guide](review-guide.md) still requires agreed synthetic reviewer
+trials and a recording. Upload validation, policy attestations, review approval,
+and publication are separate steps. No approval or acceptance is implied here.
