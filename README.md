@@ -35,6 +35,10 @@ See the [compatibility matrix](references/compatibility.md) for live release evi
 The plugin bundles the skill, local MCP server, and inspector. With Node 20+,
 Python 3.10+, and a Codex CLI supporting `plugin add` (tested on 0.160.0):
 
+Plugin telemetry currently requires the default `~/.codex` data directory.
+For a custom `CODEX_HOME`, use the standalone installation below; the tested Codex
+host does not forward that setting to plugin MCP servers.
+
 ```sh
 codex plugin marketplace add ArielSmoliar/codex-context-status --ref main
 codex plugin add context-status@codex-context-status

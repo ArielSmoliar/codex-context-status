@@ -27,7 +27,9 @@ const source = await readFile(join(root, 'SKILL.md'), 'utf8');
 const old = 'For installation or upgrade requests, read [references/installation.md](references/installation.md). The setup helper previews by default, preserves local conflicts, and prints registration commands without executing them. Do not run it during an ordinary context-status report.';
 if (!source.includes(old)) throw new Error('Review the packaged installation instructions after changing SKILL.md.');
 await writeFile(join(skill, 'SKILL.md'), source.replace(old,
-  'This copy is installed as a Codex plugin. For setup, upgrades, migration, or removal, read [references/plugin.md](references/plugin.md). Use the Codex plugin lifecycle; do not create a second standalone skill or MCP registration.'));
+  'This copy is installed as a Codex plugin. For setup, upgrades, migration, or removal, read [references/plugin.md](references/plugin.md). Use the Codex plugin lifecycle; do not create a second standalone skill or MCP registration.')
+  .replace('## Default: MCP App inspector with in-place Refresh',
+    '## Plugin data directory check\n\nBefore calling the plugin MCP tool, resolve the current chat’s CODEX_HOME via the shell (default ~/.codex). This plugin’s MCP server supports only the default ~/.codex directory on the tested Codex release; the host does not forward custom CODEX_HOME settings. If a different home is configured, do not call the plugin MCP tools. Explain the limitation and use the inline fallback below with --codex-home set to that exact known directory. For in-place refresh with custom homes, follow the standalone installation link in references/plugin.md. Never guess another directory.\n\n## Default: MCP App inspector with in-place Refresh'));
 // Reference-only documents outside the runtime allowlist remain readable online.
 for (const name of files.filter(name => name.endsWith('.md'))) {
   let markdown = await readFile(join(skill, name), 'utf8');

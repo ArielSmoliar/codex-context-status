@@ -6,6 +6,13 @@ install hook, or runtime dependency download. Node 20+ and Python 3.10+ with IAN
 timezone data must be on the PATH available to Codex. The desktop must support
 local MCP Apps. Remote chats without local logs can report unavailable telemetry.
 
+**The plugin currently supports the default data directory, `~/.codex`.** Codex
+0.160.0 does not forward a custom `CODEX_HOME` to plugin MCP servers. For a custom
+data directory, use the [standalone installer](https://github.com/ArielSmoliar/codex-context-status/blob/main/references/installation.md),
+which explicitly configures the server's home. Do not rely on the plugin inspector
+for a custom-home session. The packaged skill can provide an inline snapshot using
+the explicitly selected home instead; that fallback does not refresh in place.
+
 ## Install
 
 Use a Codex CLI with `codex plugin add` support (tested with 0.160.0):
@@ -81,8 +88,9 @@ downloads or upgrades the package, not when the inspector reads telemetry.
 If startup fails, check `node --version`, `python3 --version`, and
 `python3 -c "from zoneinfo import ZoneInfo; ZoneInfo('UTC')"` from the environment
 that launches Codex. Installing Node/Python after Codex started may require a full
-restart. If logs live in a custom Codex home, launch Codex with that existing
-`CODEX_HOME` setting; never hard-code a user's path or a chat ID into the manifest.
+restart. Setting `CODEX_HOME` on the Codex process does not configure the plugin
+server's data directory on the tested release. Use the standalone installer for
+custom homes; never hard-code a user's path or a chat ID into the shared manifest.
 Missing telemetry must remain unavailable, not substituted with another chat.
 
 Packaging follows the [official plugin guide](https://developers.openai.com/plugins/build/plugins).

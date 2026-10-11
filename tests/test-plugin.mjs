@@ -10,13 +10,13 @@ import {StdioClientTransport} from '../mcp/node_modules/@modelcontextprotocol/sd
 import {makeFixture} from './fixture.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const fixture = await makeFixture();
+const fixture = await makeFixture(60000, {defaultHome: true});
 const home = fixture.home;
 const repo = join(home, 'marketplace-source');
 const pluginId = 'context-status@codex-context-status';
 // Git uses a local transport for a synthetic HTTPS URL: exercises Codex's Git
 // marketplace snapshots and upgrades without GitHub, credentials, or network.
-const env = {PATH: process.env.PATH, HOME: process.env.HOME, CODEX_HOME: home,
+const env = {PATH: process.env.PATH, HOME: fixture.userHome, CODEX_HOME: home,
   PYTHONDONTWRITEBYTECODE: '1', GIT_CONFIG_NOSYSTEM: '1',
   GIT_CONFIG_GLOBAL: join(home, 'gitconfig'), GIT_TERMINAL_PROMPT: '0'};
 if (process.env.CONTEXT_STATUS_PYTHON) env.CONTEXT_STATUS_PYTHON = process.env.CONTEXT_STATUS_PYTHON;
@@ -25,8 +25,8 @@ const run = (command, args, cwd=home) => execFileSync(command, args,
 const codex = (...args) => JSON.parse(run('codex', ['plugin', ...args, '--json']));
 const git = (...args) => run('git', args, repo);
 
-async function inspectHost(expected) {
-  const child = spawn('codex', ['app-server', '--stdio'], {cwd: home, env, stdio: ['pipe','pipe','pipe']});
+async function inspectHost(expected, hostEnv=env, customHome=false) {
+  const child = spawn('codex', ['app-server', '--stdio'], {cwd: home, env: hostEnv, stdio: ['pipe','pipe','pipe']});
   const exited = new Promise(resolve => child.once('exit', resolve));
   const pending = new Map();
   let seq = 0;
@@ -57,6 +57,19 @@ async function inspectHost(expected) {
     assert.ok(server.resources.some(item => item.uri === 'ui://context-status/inspector-v1.html'));
     const skills = await call('skills/list', {cwds: [home], forceReload: true});
     assert.ok(JSON.stringify(skills).includes('context-status:context-status'), 'Codex discovers the namespaced skill');
+    // Discovery alone does not test the host's filtered MCP process environment.
+    // Start an ephemeral thread without ever starting a model turn.
+    const {thread} = await call('thread/start', {cwd: home, ephemeral: true});
+    const read = await call('mcpServer/tool/call', {threadId: thread.id,
+      server: server.name, tool: 'open_context_status',
+      arguments: {thread_id: fixture.id, timezone: 'UTC'}});
+    if (customHome) {
+      assert.equal(read.structuredContent.status, 'unavailable');
+      assert.equal(read.structuredContent.diagnostics.failure_code, 'home_unavailable');
+    } else {
+      assert.equal(read.structuredContent.status, 'ok');
+      assert.equal(read.structuredContent.capacity_estimate.used_tokens, 60000);
+    }
   } finally {
     lines.close();
     child.kill();
@@ -137,7 +150,10 @@ try {
   await inspectHost(true);
   assert.equal(await readFile(log, 'utf8'), before);
   await checkRuntime(installed.installedPath);
-  console.log('PASS: Git marketplace install, real host discovery, offline bundled MCP, refresh and exact chat binding');
+  const otherUserHome = join(home, 'empty-user-home');
+  await mkdir(otherUserHome);
+  await inspectHost(true, {...env, HOME: otherUserHome}, true);
+  console.log('PASS: Git marketplace install, real host telemetry call, default-home support and custom-home limitation, offline bundled MCP, refresh and exact chat binding');
 
   // Publish a new version to the local Git source, then use actual Codex commands.
   const parts = originalVersion.split('.').map(Number);

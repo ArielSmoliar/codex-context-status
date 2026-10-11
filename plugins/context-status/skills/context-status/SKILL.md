@@ -9,6 +9,10 @@ description: Show a visual inspector of the current Codex chat's recorded contex
 
 Keep usage numbers and session recommendations inside the visualization. After opening the MCP App or emitting the fallback visualization, do not repeat percentages, token counts, cache ratios, compaction counts, or capacity-based guidance in chat prose: that text becomes stale after Refresh. If a final acknowledgment is needed, say only “Context inspector ready. Use Refresh to update it.” Explain errors or unavailable data when necessary. Provide textual measurements only when the user explicitly requests a text report or explanation.
 
+## Plugin data directory check
+
+Before calling the plugin MCP tool, resolve the current chat’s CODEX_HOME via the shell (default ~/.codex). This plugin’s MCP server supports only the default ~/.codex directory on the tested Codex release; the host does not forward custom CODEX_HOME settings. If a different home is configured, do not call the plugin MCP tools. Explain the limitation and use the inline fallback below with --codex-home set to that exact known directory. For in-place refresh with custom homes, follow the standalone installation link in references/plugin.md. Never guess another directory.
+
 ## Default: MCP App inspector with in-place Refresh
 
 When the local `context-status` MCP server's `open_context_status` tool is available, use it instead of emitting an inline snapshot. Obtain the exact current chat ID from `CODEX_THREAD_ID` (or `CODEX_SESSION_ID`) via the shell, and call `open_context_status` with that `thread_id` and the client IANA `timezone` (UTC if unknown). Do not use an ID from the global MCP server environment, guess the newest chat, or reuse an ID from a prior report. The tool opens a real MCP App with the same horizontal bars and expandable details.
