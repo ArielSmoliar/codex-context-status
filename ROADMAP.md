@@ -8,7 +8,7 @@ Installation and upgrades: preview-first managed copies, hash-based conflict det
 
 Compatibility foundation: documented live evidence separately from synthetic fixtures, exposed sanitized producer/format evidence, and withheld capacity advice after unreadable newer usage. See the [matrix](references/compatibility.md).
 
-Session advice: task-intent controls, explicit waiting-state guidance, and a copyable handoff prompt with manual-copy fallback are implemented. The prompt has browser workflow coverage; its usefulness across real tasks still needs user feedback.
+Session advice: task-intent controls, explicit waiting-state guidance, and a copyable handoff prompt with manual-copy fallback are implemented. Preparation and resume prompts now cover both sides of the transition, including current-state checks and the distinction between merged and installed work. They have browser workflow coverage; fresh-chat effectiveness across real tasks is still unverified. See the [evaluation scenarios](references/handoffs.md#evaluating-a-handoff).
 
 1. **Version coverage:** gather live verification for additional Codex releases using the documented checklist; only one desktop build is currently verified. Synthetic format tests do not replace that evidence.
 2. **Handoff feedback:** try the prompt at real task boundaries and assess whether the next chat can resume with the goal, decisions, verification, and next action intact. Refine from observed gaps rather than adding more speculative heuristics.
