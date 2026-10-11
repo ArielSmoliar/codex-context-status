@@ -12,6 +12,11 @@ install/upgrade/removal. See [plugin lifecycle and standalone migration](referen
 The lifecycle test uses real Codex commands and synthetic telemetry in an isolated
 home; desktop rendering and new-user adoption still need pilot evidence.
 
+OpenAI directory distribution: a [submission-readiness packet](references/submission/README.md)
+and unsent eligibility inquiry are prepared. Local stdio transport, telemetry
+extraction from session logs, and Codex-only platform scope need explicit guidance
+before submission. Listing and review drafts do not establish eligibility.
+
 Compatibility foundation: documented live evidence separately from synthetic fixtures, exposed sanitized producer/format evidence, and withheld capacity advice after unreadable newer usage. See the [matrix](references/compatibility.md).
 
 Session advice: task-intent controls, explicit waiting-state guidance, and a copyable handoff prompt with manual-copy fallback are implemented. Preparation and resume prompts now cover both sides of the transition, including current-state checks and the distinction between merged and installed work. They have browser workflow coverage; fresh-chat effectiveness across real tasks is still unverified. See the [evaluation scenarios](references/handoffs.md#evaluating-a-handoff).
