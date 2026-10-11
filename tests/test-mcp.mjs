@@ -1,0 +1,33 @@
+import { fileURLToPath } from 'node:url';
+import assert from 'node:assert/strict';
+import { Client } from '../mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js';
+import { StdioClientTransport } from '../mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js';
+import { makeFixture } from './fixture.mjs';
+const sandbox=await makeFixture(60000);
+const transport = new StdioClientTransport({command:process.execPath,args:[fileURLToPath(new URL('../mcp/server.mjs',import.meta.url))],env:{...process.env,CODEX_HOME:sandbox.home}});
+const client = new Client({name:'context-status-test',version:'1.0'});
+try {
+ await client.connect(transport);
+ const {tools}=await client.listTools();
+ assert.equal(tools.length,2);
+ assert.ok(tools.find(t=>t.name==='open_context_status')._meta.ui.resourceUri);
+ const read=tools.find(t=>t.name==='read_context_status');
+ assert.equal(read._meta.ui.resourceUri,undefined);
+ assert.deepEqual(read._meta.ui.visibility,['app']);
+ const resource=await client.readResource({uri:'ui://context-status/inspector-v1.html'});
+ assert.equal(resource.contents[0].mimeType,'text/html;profile=mcp-app');
+ assert.ok(!resource.contents[0].text.includes('sendFollowUpMessage'));
+ const args={thread_id:sandbox.id,timezone:'America/New_York'};
+ const one=await client.callTool({name:'open_context_status',arguments:args});
+ assert.equal(one.structuredContent.thread_id,args.thread_id);
+ assert.equal(one.structuredContent.status,'ok');
+ assert.equal(one.structuredContent.source_path,undefined);
+ assert.equal(one.structuredContent.recorded_account_rate_limits,undefined);
+ const two=await client.callTool({name:'read_context_status',arguments:args});
+ assert.ok(two.structuredContent.observed_at > one.structuredContent.observed_at);
+ const missing=await client.callTool({name:'read_context_status',arguments:{...args,thread_id:'00000000-0000-0000-0000-000000000000'}});
+ assert.equal(missing.structuredContent.status,'unavailable');
+ const invalid=await client.callTool({name:'read_context_status',arguments:{...args,thread_id:'../../bad'}});
+ assert.equal(invalid.isError,true);
+ console.log('PASS: local stdio tools, UI resource, fresh reads, redaction, exact chat binding, invalid input');
+} finally {await client.close();await sandbox.cleanup();}
