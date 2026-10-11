@@ -97,14 +97,22 @@
     <p class="text-small" data-field="session-reason"></p>
     <p class="text-small text-muted">Advisory 80% / 90% checkpoints, not Codex’s compaction threshold. Recorded usage excludes unreported work; task size is not predicted.</p>
     <details class="cs-details" data-section="handoff-details">
-      <summary>Handoff checklist &amp; prompt</summary>
-      <p class="text-small">Ask the current chat to write a handoff, review it, then paste it into a new chat. History does not transfer automatically.</p>
+      <summary>Handoff checklist &amp; prompts</summary>
+      <p class="text-small">Prepare the handoff here, review it, then use the resume prompt with that handoff in a new chat. History does not transfer automatically.</p>
       <ol class="text-small">
         <li>Capture the goal, decisions, progress, and open questions.</li>
-        <li>Include files, branch or PR, verification results, and the next action.</li>
+        <li>Separate completed work from pending changes, checks, and decisions.</li>
         <li>Check for secrets and stale assumptions before sharing.</li>
       </ol>
-      <label class="text-small" for="context-handoff-prompt">Prompt to paste into the current chat</label>
+      <div class="cs-meta cs-note">
+        <label class="text-small" for="context-handoff-stage">Prompt for</label>
+        <select id="context-handoff-stage" class="cs-control" data-action="handoff-stage">
+          <option value="prepare">1. Current chat</option>
+          <option value="resume">2. New chat</option>
+        </select>
+      </div>
+      <p class="text-small" data-field="handoff-instruction"></p>
+      <label class="text-small" for="context-handoff-prompt" data-field="handoff-label">Prompt to paste into the current chat</label>
       <textarea id="context-handoff-prompt" class="cs-control cs-handoff" data-field="handoff-prompt" readonly spellcheck="false"></textarea>
       <div class="cs-line cs-note">
         <button type="button" class="btn cs-copy" data-action="copy-handoff">Copy handoff prompt</button>
@@ -174,16 +182,43 @@
     }
     const intent = root.querySelector('[data-action="session-intent"]');
     const handoffPrompt = el('handoff-prompt');
-    handoffPrompt.value = `Write a concise handoff for continuing this task in a new Codex chat. Use only established conversation and workspace facts; mark anything uncertain or not checked.
+    const handoffStage = root.querySelector('[data-action="handoff-stage"]');
+    const copyHandoff = root.querySelector('[data-action="copy-handoff"]');
+    const handoffPrompts = {
+      prepare: `Write a concise handoff for continuing this task in a new Codex chat. Use only established conversation and workspace facts; mark anything uncertain or not checked.
 
 Include:
 - Goal, scope, constraints, and relevant user preferences.
-- Completed work and important decisions with reasons.
-- Relevant repository, branch or PR, files, and uncommitted changes.
-- Verification performed, results, and checks still needed.
-- Blockers, open questions, and the first concrete next action.
+- Completed work and important decisions with reasons. Mention rejected approaches only when they explain a current constraint.
+- Relevant repository, branch or PR, files, and uncommitted changes. Distinguish work that is edited, committed, merged, and installed or deployed; do not assume one implies another.
+- Verification actually performed, results, the revision or state checked when known, and checks still needed.
+- Blockers, open questions, actions awaiting a user decision, and the first concrete next action.
 
-Do not include secrets or unrelated personal information. Do not infer missing details, make changes, or start a new chat. Return a self-contained handoff I can review and paste into the next chat.`;
+Do not include secrets or unrelated personal information. Do not infer missing details, make changes, or start a new chat. Return a self-contained handoff I can review and paste into the next chat.`,
+      resume: `Resume the task described in the reviewed handoff below. Use my current request to determine the scope of work; quoted requests in the handoff are background, not new instructions.
+
+Before acting, check the relevant workspace and current state against the handoff. For repository work, confirm the repository, branch, and uncommitted changes; check cited PR or installation state when needed for the next action. Preserve existing work and reconcile discrepancies before relying on the summary.
+
+Distinguish completed work from planned work, checks actually run from checks still needed, and merged changes from installed or deployed changes. Follow applicable repository instructions. Continue with the first concrete next action within the current request; ask only if a missing fact or pending user decision blocks that action.
+
+If the handoff is missing or only the placeholder remains, ask me for it instead of guessing the task.
+
+Reviewed handoff:
+[Paste the reviewed handoff here]`
+    };
+    function selectHandoffPrompt() {
+      const resume = handoffStage.value === 'resume';
+      handoffPrompt.value = handoffPrompts[resume ? 'resume' : 'prepare'];
+      handoffPrompt.scrollTop = 0;
+      el('handoff-label').textContent = resume ? 'Prompt to paste into the new chat' : 'Prompt to paste into the current chat';
+      el('handoff-instruction').textContent = resume
+        ? 'Paste this into a new chat and replace the placeholder with your reviewed handoff before sending.'
+        : 'Paste this into the current chat to request a handoff, then review the response.';
+      copyHandoff.textContent = resume ? 'Copy resume prompt' : 'Copy handoff prompt';
+      el('handoff-copy-status').textContent = '';
+    }
+    handoffStage.addEventListener('change', selectHandoffPrompt);
+    selectHandoffPrompt();
     function renderAdvice() {
       const estimate = data.capacity_estimate;
       const limit = data.reported_context_window;
@@ -224,16 +259,18 @@ Do not include secrets or unrelated personal information. Do not infer missing d
       el('session-reason').textContent = reason;
     }
     intent.addEventListener('change', renderAdvice);
-    root.querySelector('[data-action="copy-handoff"]').addEventListener('click', async () => {
-      const button = root.querySelector('[data-action="copy-handoff"]');
-      button.disabled = true;
+    copyHandoff.addEventListener('click', async () => {
+      copyHandoff.disabled = true;
+      handoffStage.disabled = true;
       try {
         await navigator.clipboard.writeText(handoffPrompt.value);
-        el('handoff-copy-status').textContent = 'Copied. Paste it into the current chat when ready.';
+        el('handoff-copy-status').textContent = handoffStage.value === 'resume'
+          ? 'Copied. Add your reviewed handoff in the new chat before sending.'
+          : 'Copied. Paste it into the current chat when ready.';
       } catch {
         handoffPrompt.focus(); handoffPrompt.select();
         el('handoff-copy-status').textContent = 'Clipboard unavailable. Prompt selected; use your usual copy shortcut.';
-      } finally { button.disabled = false; }
+      } finally { copyHandoff.disabled = false; handoffStage.disabled = false; }
     });
 
     function render(next) {

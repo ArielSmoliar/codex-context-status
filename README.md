@@ -12,7 +12,7 @@ A local context inspector for Codex desktop, with horizontal capacity and cache 
 - Session-recorded producer version and evidence for known usage formats; unreadable newer measurements withhold capacity advice until recovery.
 - A teal Refresh button and Auto-refresh enabled by default, every 15 seconds while visible.
 - Task-aware session advice with explicit 80% and 90% advisory checkpoints.
-- Expandable handoff checklist and a copyable prompt, with manual-copy fallback.
+- Expandable handoff checklist with preparation and resume prompts, plus manual-copy fallback.
 
 Refresh updates the existing inspector without sending a chat message or invoking a model. Auto-refresh pauses when hidden, can be switched off, and stops after three consecutive failures. Usage numbers and recommendations stay inside the view so chat text does not become stale.
 
@@ -55,7 +55,9 @@ To unregister the server, run `codex mcp remove context-status`. Removing the sk
 
 The 80% and 90% checkpoints are advisory, not Codex's compaction trigger. Choose your **Next step** to distinguish continuing the task, planning a large step, or starting unrelated work. The inspector cannot predict the size of that step. Missing telemetry and compaction counts alone do not mean you should restart.
 
-Expand **Handoff checklist & prompt** for a checklist and prompt to paste into the current chat. The prompt asks for established goals, decisions, files, verification, blockers, and the next action. Copying does not generate a summary, send a message, or open a chat. Review the resulting handoff before pasting it into a new session. If clipboard access is unavailable, the text is selected for manual copying. Your intent and expanded details persist through refreshes within the current view.
+Expand **Handoff checklist & prompts** for a checklist and prompt to paste into the current chat. The prompt asks for established goals, decisions, files, verification, blockers, and the next action. Copying does not generate a summary, send a message, or open a chat. Review the resulting handoff before pasting it into a new session. If clipboard access is unavailable, the text is selected for manual copying.
+
+Choose **1. Current chat** to prepare the handoff or **2. New chat** for the resume prompt. Add your reviewed handoff to the resume prompt before sending it. The resume prompt asks the next chat to reconcile the summary with current workspace state before continuing. Your intent, prompt selection, and expanded details persist through refreshes within the current view. See [handoff and resume guidance](references/handoffs.md).
 
 Model changes are detected when the new model appears in recorded turn metadata, typically after the next message. The previous context limit is cleared, and capacity is withheld until fresh usage and a new limit exist. Older cache measurements retain their model label. The inspector records a switch count and the latest ten transitions; these reflect the available log, not model-picker clicks. Cache-miss causes remain unavailable.
 
