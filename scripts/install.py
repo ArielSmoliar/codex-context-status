@@ -17,7 +17,8 @@ MANIFEST = '.context-status-install.json'
 PACKAGE_FILES = ('SKILL.md', 'README.md', 'ROADMAP.md', 'agents/openai.yaml',
                  'assets/inspector.html', 'scripts/context_status.py', 'scripts/mcp_snapshot.py',
                  'scripts/render_status.py', 'scripts/install.py', 'references/telemetry.md',
-                 'references/installation.md', 'references/performance.md', 'mcp/server.mjs', 'mcp/inspector.html',
+                 'references/installation.md', 'references/performance.md', 'references/compatibility.md',
+                 'mcp/server.mjs', 'mcp/inspector.html',
                  'mcp/package.json', 'mcp/package-lock.json', 'mcp/build_widget.py',
                  'mcp/bridge.js', 'mcp/theme.css', 'mcp/README.md')
 

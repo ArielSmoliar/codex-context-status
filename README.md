@@ -9,6 +9,7 @@ A local context inspector for Codex desktop, with horizontal capacity and cache 
 - Current recorded model, reasoning effort, compaction activity, and measurement timestamps.
 - Latest-usage model attribution, a waiting state after model changes, and the ten most recent recorded switches.
 - Expandable telemetry checks for verified session identity, model metadata, usage, context limit, and cache counters, including when usage is unavailable.
+- Session-recorded producer version and evidence for known usage formats; unreadable newer measurements withhold capacity advice until recovery.
 - A teal Refresh button and Auto-refresh enabled by default, every 15 seconds while visible.
 - Advisory handoff checkpoints at 80% and 90% estimated usage.
 
@@ -21,6 +22,8 @@ Refresh updates the existing inspector without sending a chat message or invokin
 - Node.js 20+ and Python 3.10+ with IANA timezone data.
 
 This project was verified on macOS with Codex desktop 26.1007.21159. Its local log format is an implementation detail and can change between Codex releases. Browser and reader tests also run on Linux; this is not a claim of full desktop compatibility across platforms.
+
+See the [compatibility matrix](references/compatibility.md) for live release evidence, synthetic format coverage, and how to verify another release. Currently only one desktop build has documented live verification.
 
 ## Install
 

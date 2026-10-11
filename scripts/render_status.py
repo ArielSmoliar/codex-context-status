@@ -11,7 +11,7 @@ DISPLAY_FIELDS = (
     'capacity_unavailable_reason', 'latest_cache_hit_percent',
     'latest_noncached_input_tokens', 'compactions_observed', 'last_compaction_at',
     'ignored_malformed_lines',
-    'latest_usage_model', 'usage_state', 'model_switches', 'model_switch_count', 'diagnostics',
+    'latest_usage_model', 'usage_state', 'model_switches', 'model_switch_count', 'diagnostics', 'compatibility',
 )
 
 
