@@ -6,7 +6,9 @@
   "description": "Local context and cache inspector for Codex desktop",
   "scripts": {
     "benchmark": "python3 scripts/benchmark_refresh.py",
-    "build": "python3 mcp/build_widget.py",
+    "build": "python3 mcp/build_widget.py && npm run build:plugin",
+    "build:plugin": "node scripts/build_plugin.mjs",
+    "test:plugin": "node tests/test-plugin.mjs",
     "test:unit": "python3 -m unittest discover -s tests -p 'test_*.py'",
     "test:mcp": "node tests/test-mcp.mjs",
     "test:install": "node tests/test-install-mcp.mjs",
@@ -15,6 +17,7 @@
     "test": "npm run test:unit && npm run test:mcp && npm run test:install && npm run test:ui"
   },
   "devDependencies": {
+    "esbuild": "0.25.12",
     "playwright": "1.58.2"
   },
   "engines": {

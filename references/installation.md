@@ -1,5 +1,10 @@
 # Installation and upgrades
 
+This page covers the standalone skill installer. For the self-contained GitHub
+plugin and its Codex-managed lifecycle, see [plugin installation](plugin.md).
+Choose one mode; migrating a standalone copy requires preserving its files and
+removing its separate MCP registration before enabling the plugin.
+
 Run the helper from a trusted checkout of the revision you want to install:
 
 ```sh

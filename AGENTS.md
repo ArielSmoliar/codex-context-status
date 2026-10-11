@@ -7,5 +7,6 @@
 - Auto-refresh starts on, runs every 15 seconds while visible, pauses when hidden, and stops after three consecutive failures. It must not send follow-up chat messages or create scheduled automations.
 - Capacity is an estimate. Cached input/reasoning output are subsets. Cumulative consumption is not occupancy. Do not guess unavailable fields or compaction thresholds.
 - Run `npm run build` after editing the template, bridge, or CSS. Commit the generated MCP HTML.
+- The Git-distributed plugin under `plugins/context-status/` is generated. Edit canonical runtime files and `packaging/` manifests, run `npm run build`, and commit the regenerated package. Increment the plugin manifest version for released package changes. Run `npm run test:plugin` with the supported Codex CLI for lifecycle changes; it isolates configuration and synthetic telemetry.
 - Run the relevant tests, and `npm test` for cross-layer changes. Use `CHROME_EXECUTABLE_PATH` when a local Chrome binary is needed.
 - Do not publish logs, screenshots with personal telemetry, session IDs, credentials, or machine-specific paths.

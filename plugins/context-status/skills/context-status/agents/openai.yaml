@@ -1,0 +1,4 @@
+interface:
+  display_name: "Context Status"
+  short_description: "Visualize context capacity, cache reuse, and usage"
+  default_prompt: "Use $context-status to show the default visual inspector for this chat’s latest context, cache, and compaction measurements."

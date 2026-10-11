@@ -1,0 +1,420 @@
+<div id="context-status-inspector">
+  <style>
+    #context-status-inspector { color: var(--foreground); padding: 8px 0; }
+    #context-status-inspector [hidden] { display: none !important; }
+    #context-status-inspector .cs-header { margin-bottom: 26px; }
+    #context-status-inspector .cs-heading { padding-right: 92px; }
+    #context-status-inspector .cs-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+    #context-status-inspector .cs-line { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 5px 18px; }
+    #context-status-inspector .cs-label { font-weight: 500; }
+    #context-status-inspector .cs-section + .cs-section { margin-top: 28px; }
+    #context-status-inspector .cs-chart { display: block; width: 100%; height: 34px; margin-top: 12px; }
+    #context-status-inspector .cs-chart-secondary { height: 18px; }
+    #context-status-inspector .cs-scale { display: flex; justify-content: space-between; margin-top: 5px; }
+    #context-status-inspector .cs-legend { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 14px; }
+    #context-status-inspector .cs-legend-item { display: inline-flex; align-items: baseline; gap: 7px; }
+    #context-status-inspector .cs-swatch { display: inline-block; width: 9px; height: 9px; flex: 0 0 auto; }
+    #context-status-inspector .cs-note { margin-top: 10px; }
+    #context-status-inspector .cs-compaction { margin: 24px 0 16px; }
+    #context-status-inspector .cs-details { border-top: 1px solid var(--border); }
+    #context-status-inspector .cs-details summary { padding: 13px 0; font-weight: 500; }
+    #context-status-inspector .cs-provenance { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(0, 2fr); gap: 8px 16px; margin: 20px 0; }
+    #context-status-inspector .cs-provenance dt { color: var(--muted-foreground); }
+    #context-status-inspector .cs-provenance dd { margin: 0; overflow-wrap: anywhere; }
+    #context-status-inspector .cs-advice { margin: 24px 0; }
+    #context-status-inspector .cs-advice p { max-width: 72ch; margin: 8px 0; }
+    #context-status-inspector .cs-control { font: inherit; color: var(--foreground); background: var(--color-background-primary, var(--muted)); border: 1px solid var(--border); border-radius: 6px; padding: 8px; max-width: 100%; }
+    #context-status-inspector .cs-control:focus-visible { outline: 2px solid var(--viz-series-1); outline-offset: 3px; }
+    #context-status-inspector .cs-handoff { width: 100%; min-height: 220px; resize: vertical; line-height: 1.5; }
+    #context-status-inspector .cs-advice-title { font-weight: 600; }
+    #context-status-inspector .cs-intent { border: 0; padding: 0; margin: 12px 0; min-width: 0; }
+    #context-status-inspector .cs-intent legend { padding: 0; margin-bottom: 4px; }
+    #context-status-inspector .cs-intent-option { display: flex; align-items: baseline; gap: 9px; padding: 7px 0; cursor: pointer; }
+    #context-status-inspector .cs-intent-option input { flex: 0 0 auto; margin: 0; accent-color: var(--viz-series-1); }
+    #context-status-inspector .cs-intent-option input:focus-visible { outline: 2px solid var(--viz-series-1); outline-offset: 3px; }
+    #context-status-inspector .cs-intent-copy { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; }
+    @media (pointer: coarse) { #context-status-inspector .cs-intent-option { min-height: 44px; } }
+    #context-status-inspector .cs-copy:hover:not(:disabled) { background: var(--muted); }
+    #context-status-inspector .cs-copy:active:not(:disabled) { border-color: var(--viz-series-1); }
+    @media (max-width: 420px) {
+      #context-status-inspector .cs-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+      #context-status-inspector .cs-legend-item { flex-wrap: wrap; gap: 4px 7px; }
+      #context-status-inspector .cs-provenance { grid-template-columns: 1fr; gap: 4px; }
+      #context-status-inspector .cs-provenance dd { margin-bottom: 8px; }
+    }
+  </style>
+  <div class="cs-header">
+    <div class="cs-heading">
+    <h3>Context status</h3>
+    <div class="cs-meta text-small text-muted"><span data-field="model"></span><span data-field="effort"></span></div>
+    </div>
+    <div class="cs-line cs-note">
+      <span class="text-small text-muted" data-field="snapshot"></span>
+      <button type="button" class="btn btn-primary" data-action="refresh" aria-label="Refresh context status" aria-describedby="context-refresh-status">Refresh</button>
+    </div>
+    <div id="context-refresh-status" class="text-small text-muted cs-note" role="status" aria-live="polite" hidden></div>
+    <div class="cs-note text-small" data-field="model-notice" role="status" hidden></div>
+  </div>
+  <div data-field="unavailable" role="status" hidden></div>
+  <div data-section="measurements" hidden>
+    <section class="cs-section" aria-label="Estimated context capacity">
+      <div class="cs-line"><span class="cs-label">Context capacity <span class="text-small text-muted">· estimated</span></span><span class="tabular-nums" data-field="capacity-value"></span></div>
+      <svg class="cs-chart" data-chart="capacity" role="img"></svg>
+      <div class="cs-scale text-small text-muted tabular-nums" data-section="capacity-scale"><span>0</span><span data-field="half-window"></span><span data-field="window"></span></div>
+      <div class="cs-legend text-small" data-section="capacity-legend"></div>
+      <div class="cs-note text-small text-muted" data-field="capacity-note"></div>
+    </section>
+    <section class="cs-section" aria-label="Latest request input cache reuse">
+      <div class="cs-line"><span class="cs-label">Input cache reuse</span><span class="tabular-nums" data-field="cache-value"></span></div>
+      <div class="cs-note text-small text-muted" data-field="cache-model"></div>
+      <svg class="cs-chart cs-chart-secondary" data-chart="cache" role="img"></svg>
+      <div class="cs-line cs-note text-small tabular-nums"><span data-field="cache-cached"></span><span data-field="cache-fresh"></span></div>
+    </section>
+    <div class="cs-compaction text-small text-muted" data-field="compaction"></div>
+  </div>
+  <section class="cs-advice" aria-label="Session advice">
+    <div class="cs-label">Session advice</div>
+    <fieldset class="cs-intent" data-section="session-intent" aria-describedby="context-intent-note">
+      <legend class="text-small">Next step</legend>
+      <label class="cs-intent-option">
+        <input type="radio" name="context-session-intent" value="continue" checked aria-labelledby="context-intent-continue-label" aria-describedby="context-intent-continue">
+        <span class="cs-intent-copy"><span id="context-intent-continue-label">Continue this task</span><span class="text-small text-muted" id="context-intent-continue">Keep working on the same problem.</span></span>
+      </label>
+      <label class="cs-intent-option">
+        <input type="radio" name="context-session-intent" value="large" aria-labelledby="context-intent-large-label" aria-describedby="context-intent-large">
+        <span class="cs-intent-copy"><span id="context-intent-large-label">A large step in this task</span><span class="text-small text-muted" id="context-intent-large">Start substantial work, such as a refactor or reading many files.</span></span>
+      </label>
+      <label class="cs-intent-option">
+        <input type="radio" name="context-session-intent" value="unrelated" aria-labelledby="context-intent-unrelated-label" aria-describedby="context-intent-unrelated">
+        <span class="cs-intent-copy"><span id="context-intent-unrelated-label">An unrelated task</span><span class="text-small text-muted" id="context-intent-unrelated">Switch to a different topic; a fresh chat is usually best.</span></span>
+      </label>
+    </fieldset>
+    <p class="text-small text-muted" id="context-intent-note">These choices only adjust the advice. They do not start a chat or run a task.</p>
+    <p class="cs-advice-title" data-field="session-guidance"></p>
+    <p class="text-small" data-field="session-reason"></p>
+    <p class="text-small text-muted">Advisory 80% / 90% checkpoints, not Codex’s compaction threshold. Recorded usage excludes unreported work; task size is not predicted.</p>
+    <details class="cs-details" data-section="handoff-details">
+      <summary>Handoff checklist &amp; prompts</summary>
+      <p class="text-small">Prepare the handoff here, review it, then use the resume prompt with that handoff in a new chat. History does not transfer automatically.</p>
+      <ol class="text-small">
+        <li>Capture the goal, decisions, progress, and open questions.</li>
+        <li>Separate completed work from pending changes, checks, and decisions.</li>
+        <li>Check for secrets and stale assumptions before sharing.</li>
+      </ol>
+      <div class="cs-meta cs-note">
+        <label class="text-small" for="context-handoff-stage">Prompt for</label>
+        <select id="context-handoff-stage" class="cs-control" data-action="handoff-stage">
+          <option value="prepare">1. Current chat</option>
+          <option value="resume">2. New chat</option>
+        </select>
+      </div>
+      <p class="text-small" data-field="handoff-instruction"></p>
+      <label class="text-small" for="context-handoff-prompt" data-field="handoff-label">Prompt to paste into the current chat</label>
+      <textarea id="context-handoff-prompt" class="cs-control cs-handoff" data-field="handoff-prompt" readonly spellcheck="false"></textarea>
+      <div class="cs-line cs-note">
+        <button type="button" class="btn cs-copy" data-action="copy-handoff">Copy handoff prompt</button>
+        <span class="text-small text-muted" data-field="handoff-copy-status" role="status"></span>
+      </div>
+      <p class="text-small text-muted">This is a prompt, not a generated summary. Copying it sends no message and starts no new chat.</p>
+    </details>
+  </section>
+  <details class="cs-details" data-section="accounting-details" hidden>
+    <summary class="cursor-interaction">Token accounting &amp; provenance</summary>
+    <div class="table-responsive">
+      <table class="table table-sm">
+        <caption class="sr-only">Recorded token consumption by request, current turn, and thread. Cached input and reasoning output are subsets.</caption>
+        <thead><tr><th scope="col">Tokens</th><th scope="col" class="text-end">Latest request</th><th scope="col" class="text-end">Current turn</th><th scope="col" class="text-end">Thread total</th></tr></thead>
+        <tbody data-section="accounting"></tbody>
+      </table>
+    </div>
+    <dl class="cs-provenance text-small" data-section="provenance"></dl>
+  </details>
+  <details class="cs-details" data-section="telemetry-details">
+    <summary>Telemetry checks &amp; model changes</summary>
+    <dl class="cs-provenance text-small" data-section="diagnostics"></dl>
+    <div class="text-small text-muted" data-field="diagnostics-note"></div>
+    <div class="cs-note text-small" data-field="switch-summary"></div>
+    <ul class="text-small" data-section="model-switches"></ul>
+  </details>
+  <script type="application/json" id="context-status-data">@@CONTEXT_STATUS_DATA@@</script>
+  <script>
+  (() => {
+    const root = document.getElementById('context-status-inspector');
+    const data = JSON.parse(root.querySelector('#context-status-data').textContent);
+    const el = name => root.querySelector(`[data-field="${name}"]`);
+    const section = name => root.querySelector(`[data-section="${name}"]`);
+    const numeric = n => typeof n === 'number' && Number.isFinite(n) && n >= 0;
+    const fmt = n => numeric(n) ? new Intl.NumberFormat('en-US', {maximumFractionDigits: 1}).format(n) : 'Unavailable';
+    const percent = n => numeric(n) ? `${n.toFixed(1)}%` : 'Unavailable';
+    const stamp = value => {
+      if (!value || !Number.isFinite(new Date(value).getTime())) return 'Unavailable';
+      return new Intl.DateTimeFormat('en-US', {timeZone: data.display_timezone || 'UTC', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit', second:'2-digit', timeZoneName:'short'}).format(new Date(value));
+    };
+    const colors = {cached:'var(--viz-series-1)', fresh:'var(--viz-series-2)', output:'var(--viz-series-3)', used:'var(--viz-series-1)', remaining:'var(--muted)'};
+    const svgNS = 'http://www.w3.org/2000/svg';
+    function draw(name, parts, denominator, height, label) {
+      const svg = root.querySelector(`[data-chart="${name}"]`);
+      svg.setAttribute('aria-label', label);
+      const background = document.createElementNS(svgNS, 'rect');
+      for (const [key, value] of Object.entries({x:0,y:0,width:'100%',height,fill:'var(--muted)'})) background.setAttribute(key, value);
+      svg.appendChild(background);
+      let position = 0;
+      for (const part of parts) {
+        const width = Math.max(0, Math.min(100 - position, part.value / denominator * 100));
+        if (width > 0) {
+          const rect = document.createElementNS(svgNS, 'rect');
+          for (const [key, value] of Object.entries({x:`${position}%`,y:0,width:`${width}%`,height,fill:colors[part.key]})) rect.setAttribute(key,value);
+          svg.appendChild(rect);
+        }
+        position += width;
+      }
+    }
+    function legend(parts) {
+      for (const part of parts) {
+        const row = document.createElement('span'); row.className = 'cs-legend-item';
+        const swatch = document.createElement('span'); swatch.className = 'cs-swatch'; swatch.style.background = colors[part.key]; swatch.setAttribute('aria-hidden','true');
+        const label = document.createElement('span'); label.textContent = part.label;
+        const value = document.createElement('span'); value.className='tabular-nums'; value.textContent=fmt(part.value);
+        row.append(swatch,label,value); section('capacity-legend').appendChild(row);
+      }
+    }
+    const intent = section('session-intent');
+    const handoffPrompt = el('handoff-prompt');
+    const handoffStage = root.querySelector('[data-action="handoff-stage"]');
+    const copyHandoff = root.querySelector('[data-action="copy-handoff"]');
+    const handoffPrompts = {
+      prepare: `Write a concise handoff for continuing this task in a new Codex chat. Use only established conversation and workspace facts; mark anything uncertain or not checked.
+
+Include:
+- Goal, scope, constraints, and relevant user preferences.
+- Completed work and important decisions with reasons. Mention rejected approaches only when they explain a current constraint.
+- Relevant repository, branch or PR, files, and uncommitted changes. Distinguish work that is edited, committed, merged, and installed or deployed; do not assume one implies another.
+- Verification actually performed, results, the revision or state checked when known, and checks still needed.
+- Blockers, open questions, actions awaiting a user decision, and the first concrete next action.
+
+Do not include secrets or unrelated personal information. Do not infer missing details, make changes, or start a new chat. Return a self-contained handoff I can review and paste into the next chat.`,
+      resume: `Resume the task described in the reviewed handoff below. Use my current request to determine the scope of work; quoted requests in the handoff are background, not new instructions.
+
+Before acting, check the relevant workspace and current state against the handoff. For repository work, confirm the repository, branch, and uncommitted changes; check cited PR or installation state when needed for the next action. Preserve existing work and reconcile discrepancies before relying on the summary.
+
+Distinguish completed work from planned work, checks actually run from checks still needed, and merged changes from installed or deployed changes. Follow applicable repository instructions. Continue with the first concrete next action within the current request; ask only if a missing fact or pending user decision blocks that action.
+
+If the handoff is missing or only the placeholder remains, ask me for it instead of guessing the task.
+
+Reviewed handoff:
+[Paste the reviewed handoff here]`
+    };
+    function selectHandoffPrompt() {
+      const resume = handoffStage.value === 'resume';
+      handoffPrompt.value = handoffPrompts[resume ? 'resume' : 'prepare'];
+      handoffPrompt.scrollTop = 0;
+      el('handoff-label').textContent = resume ? 'Prompt to paste into the new chat' : 'Prompt to paste into the current chat';
+      el('handoff-instruction').textContent = resume
+        ? 'Paste this into a new chat and replace the placeholder with your reviewed handoff before sending.'
+        : 'Paste this into the current chat to request a handoff, then review the response.';
+      copyHandoff.textContent = resume ? 'Copy resume prompt' : 'Copy handoff prompt';
+      el('handoff-copy-status').textContent = '';
+    }
+    handoffStage.addEventListener('change', selectHandoffPrompt);
+    selectHandoffPrompt();
+    function renderAdvice() {
+      const nextStep = intent.querySelector('input:checked').value;
+      const estimate = data.capacity_estimate;
+      const limit = data.reported_context_window;
+      const valid = data.status === 'ok' && !String(data.usage_state || '').startsWith('awaiting_') && estimate && numeric(estimate.used_tokens) && numeric(limit) && limit > 0;
+      const ratio = valid ? estimate.used_tokens / limit : null;
+      let title, reason;
+      if (nextStep === 'unrelated') {
+        title = 'Start a new session for the new task';
+        reason = 'Your next task is unrelated. A separate chat keeps its instructions focused. Save a handoff here if you will return to this work.';
+      } else if (ratio === null) {
+        title = 'Timing unavailable';
+        const waiting = {
+          awaiting_model_usage: 'The model changed; wait for a usage record from the new model.',
+          awaiting_post_compaction_usage: 'Compaction was recorded; wait for fresh usage before judging headroom.',
+          awaiting_readable_usage: 'A newer usage record is unreadable; wait for valid telemetry.'
+        };
+        reason = (waiting[data.usage_state] || 'There is no valid capacity estimate. Refresh after a completed response.') + ' You can prepare a handoff now; missing telemetry alone is not a reason to restart.';
+      } else if (ratio >= .9) {
+        title = 'Start a new session soon';
+        reason = 'Estimated headroom is low. Save a handoff before substantial work and switch at a natural stopping point. A small finishing step can stay here.';
+      } else if (ratio >= .8) {
+        title = 'Prepare a handoff';
+        reason = nextStep === 'large'
+          ? 'You are planning a large step with limited estimated headroom. Save a handoff and consider doing that step in a new chat.'
+          : 'Continue focused work, then switch at the next task boundary. Capture decisions and the next action while they are available.';
+      } else if (nextStep === 'large') {
+        title = 'Plan the next step before continuing';
+        reason = 'Recorded capacity has room, but the size of your next step is unknown. Break it into checkpoints and prepare a handoff if it will introduce substantial new material.';
+      } else {
+        title = 'Continue this session';
+        reason = 'Recorded capacity has room for continued work on this task. Reassess at the next task boundary or before adding substantial new material.';
+      }
+      if (valid && numeric(data.compactions_observed) && data.compactions_observed > 0 && nextStep !== 'unrelated') {
+        reason += ' Compaction appears in this log; confirm that key constraints are still understood. Its count alone does not require a new chat.';
+      }
+      // Do not repeatedly announce advice during background polling.
+      el('session-guidance').textContent = title;
+      el('session-reason').textContent = reason;
+    }
+    intent.addEventListener('change', renderAdvice);
+    copyHandoff.addEventListener('click', async () => {
+      copyHandoff.disabled = true;
+      handoffStage.disabled = true;
+      try {
+        await navigator.clipboard.writeText(handoffPrompt.value);
+        el('handoff-copy-status').textContent = handoffStage.value === 'resume'
+          ? 'Copied. Add your reviewed handoff in the new chat before sending.'
+          : 'Copied. Paste it into the current chat when ready.';
+      } catch {
+        handoffPrompt.focus(); handoffPrompt.select();
+        el('handoff-copy-status').textContent = 'Clipboard unavailable. Prompt selected; use your usual copy shortcut.';
+      } finally { copyHandoff.disabled = false; handoffStage.disabled = false; }
+    });
+    el('model').textContent = data.model || 'Model unavailable';
+    renderAdvice();
+    el('effort').textContent = data.reasoning_effort ? `Reasoning: ${data.reasoning_effort}` : '';
+    el('snapshot').textContent = `Recorded ${stamp(data.usage_timestamp)}`;
+    section('diagnostics').replaceChildren();
+    for (const check of data.diagnostics?.checks || []) {
+      const term=document.createElement('dt'), detail=document.createElement('dd');
+      term.textContent=check.label;
+      const checkLabel={observed:'Observed',unavailable:'Unavailable',not_checked:'Not checked',not_observed:'Not observed'};
+      detail.textContent=`${checkLabel[check.status] || 'Unavailable'} · ${check.detail}`;
+      section('diagnostics').append(term,detail);
+    }
+    el('diagnostics-note').textContent=data.diagnostics?.note || 'Telemetry checks unavailable.';
+    section('model-switches').replaceChildren();
+    for (const change of data.model_switches || []) {
+      const row=document.createElement('li');
+      row.textContent=`${change.from_model} → ${change.to_model} · ${stamp(change.timestamp)}`;
+      section('model-switches').append(row);
+    }
+    el('switch-summary').textContent=data.model_switch_count
+      ? `${fmt(data.model_switch_count)} ${data.model_switch_count === 1 ? 'model change' : 'model changes'} recorded${data.model_switch_count > 10 ? ' · Showing the latest 10' : ''}`
+      : numeric(data.model_switch_count) ? 'No model changes recorded in this snapshot.' : 'Model-change history unavailable.';
+    const waitingForModel=data.usage_state === 'awaiting_model_usage';
+    el('model-notice').hidden=!waitingForModel;
+    el('model-notice').textContent=waitingForModel
+      ? `Waiting for usage from ${data.model || 'the new model'}. Latest measurements belong to ${data.latest_usage_model || 'an unknown model'}.` : '';
+    el('cache-model').textContent=`Latest request model: ${data.latest_usage_model || 'unavailable'}${waitingForModel ? ' · Before the model change' : ''}`;
+    const refresh = root.querySelector('[data-action="refresh"]');
+    const refreshStatus = root.querySelector('#context-refresh-status');
+    let requesting = false;
+    const canRefresh = () => window.openai && typeof window.openai.sendFollowUpMessage === 'function';
+    function updateRefreshAvailability() {
+      refresh.disabled = requesting || !canRefresh();
+      if (!canRefresh()) {
+        refreshStatus.hidden = false;
+        refreshStatus.textContent = 'Refresh is available when this report is opened in Codex.';
+      } else if (refreshStatus.textContent === 'Refresh is available when this report is opened in Codex.') {
+        refreshStatus.hidden = true;
+        refreshStatus.textContent = '';
+      }
+    }
+    refresh.addEventListener('click', async () => {
+      if (requesting || !canRefresh()) return;
+      requesting = true;
+      refresh.disabled = true;
+      refresh.textContent = 'Requesting…';
+      refreshStatus.hidden = false;
+      refreshStatus.textContent = 'Requesting a fresh snapshot from Codex…';
+      try {
+        await window.openai.sendFollowUpMessage({
+          prompt: 'Use $context-status to refresh this chat’s context-status visualization from fresh local telemetry. Show the default visual inspector with its Refresh button and the current client timezone. Treat earlier visualizations as historical snapshots.',
+          title: 'Refresh context status'
+        });
+        refreshStatus.textContent = 'Check the chat for the refresh request or new snapshot.';
+      } catch (_) {
+        refreshStatus.textContent = 'Refresh was not sent. Try again.';
+      } finally {
+        requesting = false;
+        refresh.textContent = 'Refresh';
+        updateRefreshAvailability();
+      }
+    });
+    updateRefreshAvailability();
+    window.addEventListener('openai:set_globals', updateRefreshAvailability);
+    if (data.status !== 'ok') {
+      el('unavailable').hidden = false;
+      el('unavailable').textContent = data.reason || 'No recorded usage is available for this chat.';
+      return;
+    }
+    section('measurements').hidden = false;
+    section('accounting-details').hidden = false;
+    const latest = data.latest_request || {};
+    const estimate = data.capacity_estimate;
+    const limit = data.reported_context_window;
+    if (estimate && numeric(estimate.used_tokens) && numeric(limit) && limit > 0) {
+      const used = estimate.used_tokens;
+      const cached = latest.cached_input_tokens;
+      const fresh = data.latest_noncached_input_tokens;
+      const output = latest.output_tokens;
+      const canSplit = [cached,fresh,output].every(numeric) && cached + fresh + output === used;
+      const parts = canSplit ? [{key:'cached',label:'Cached input',value:cached},{key:'fresh',label:'Noncached input',value:fresh},{key:'output',label:'Output',value:output}] : [{key:'used',label:'Used',value:used}];
+      const remaining = Math.max(0, limit - used);
+      el('capacity-value').textContent = `${percent(used / limit * 100)} used · ${fmt(remaining)} remaining`;
+      draw('capacity',parts,limit,34,`Estimated context capacity: ${fmt(used)} used, ${fmt(remaining)} remaining, out of ${fmt(limit)} tokens.`);
+      legend([...parts,{key:'remaining',label:'Remaining',value:remaining}]);
+      el('half-window').textContent = fmt(limit / 2);
+      el('window').textContent = `${fmt(limit)} tokens`;
+      el('capacity-note').textContent = used > limit ? 'Recorded footprint exceeds the reported limit; displayed bar is capped.' : 'Basis: last recorded input + output';
+    } else {
+      root.querySelector('[data-chart="capacity"]').setAttribute('hidden','');
+      section('capacity-scale').hidden = true;
+      el('capacity-value').textContent = 'Unavailable';
+      el('capacity-note').textContent = data.capacity_unavailable_reason || 'No valid capacity measurement.';
+    }
+    const input = latest.input_tokens, cached = latest.cached_input_tokens;
+    if (numeric(input) && input > 0 && numeric(cached) && cached <= input) {
+      el('cache-value').textContent = `${percent(cached / input * 100)} of ${fmt(input)} input tokens`;
+      draw('cache',[{key:'cached',value:cached},{key:'fresh',value:input-cached}],input,18,`Latest input cache reuse: ${fmt(cached)} cached and ${fmt(input-cached)} noncached tokens.`);
+      el('cache-cached').textContent = `Cached ${fmt(cached)}`;
+      el('cache-fresh').textContent = `Noncached ${fmt(input-cached)}`;
+    } else {
+      root.querySelector('[data-chart="cache"]').setAttribute('hidden','');
+      el('cache-value').textContent = input === 0 ? 'No input tokens recorded' : 'Unavailable';
+    }
+    el('compaction').textContent = !numeric(data.compactions_observed) ? 'Compaction history unavailable' : data.compactions_observed === 0 ? 'No compactions observed in this log' : `${fmt(data.compactions_observed)} compactions observed · Latest ${stamp(data.last_compaction_at)}`;
+    const labels = [['input_tokens','Input'],['cached_input_tokens','Cached input (subset)'],['cache_write_input_tokens','Cache-write input'],['output_tokens','Output'],['reasoning_output_tokens','Reasoning output (subset)'],['total_tokens','Total']];
+    for (const [key,label] of labels) {
+      const row=document.createElement('tr'), heading=document.createElement('th'); heading.scope='row'; heading.textContent=label; row.appendChild(heading);
+      for (const scope of [latest,data.current_turn_cumulative,data.thread_cumulative]) {
+        const cell=document.createElement('td'); cell.className='text-end tabular-nums'; cell.textContent=fmt(scope && scope[key]); row.appendChild(cell);
+      }
+      section('accounting').appendChild(row);
+    }
+    const provenance = [
+      ['Source','Local session log snapshot'],
+      ['Usage record',data.usage_record_type || 'Unavailable'],
+      ['Latest usage model',data.latest_usage_model || 'Unavailable'],
+      ['Read at',stamp(data.observed_at)],
+      ['Record age at read',numeric(data.usage_age_seconds) ? `${fmt(data.usage_age_seconds)} seconds` : 'Unavailable'],
+      ['Window recorded',stamp(data.window_timestamp)],
+      ['Capacity basis','Latest request footprint; excludes unreported work'],
+      ['Cumulative totals','Token consumption, not context occupancy'],
+      ['Unavailable','Exact live occupancy; per-source attribution; cache-miss causes; compaction threshold and content changes']
+    ];
+    if (data.ignored_malformed_lines) provenance.push(['Unreadable log entries',fmt(data.ignored_malformed_lines)]);
+    for (const [label,value] of provenance) {
+      const term=document.createElement('dt'), detail=document.createElement('dd'); term.textContent=label; detail.textContent=value; section('provenance').append(term,detail);
+    }
+    const details=section('accounting-details');
+    let restoring=false;
+    function restore(state) {
+      const saved=state && state.privateContent;
+      if (!saved || saved.kind !== 'context-status-v1' || typeof saved.detailsOpen !== 'boolean') return;
+      if (details.open === saved.detailsOpen) return;
+      restoring=true; details.open=saved.detailsOpen;
+    }
+    restore(window.openai && window.openai.widgetState);
+    window.addEventListener('openai:set_globals',event=>restore(event.detail && event.detail.globals && event.detail.globals.widgetState));
+    details.addEventListener('toggle',()=>{
+      if(restoring){restoring=false;return;}
+      if(window.openai && typeof window.openai.setWidgetState === 'function') {
+        window.openai.setWidgetState({modelContent:null,privateContent:{kind:'context-status-v1',detailsOpen:details.open}}).catch(()=>{});
+      }
+    });
+  })();
+  </script>
+</div>

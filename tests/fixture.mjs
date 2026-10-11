@@ -3,10 +3,11 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 
 // A synthetic Codex home keeps integration tests independent of personal chats.
-export async function makeFixture(used=60000) {
+export async function makeFixture(used=60000, {defaultHome=false}={}) {
   const id='00000000-0000-4000-8000-000000000123';
-  const home=await mkdtemp(join(tmpdir(),'context-status-test-'));
-  await mkdir(join(home,'sessions'));
+  const userHome=await mkdtemp(join(tmpdir(),'context-status-test-'));
+  const home=defaultHome ? join(userHome,'.codex') : userHome;
+  await mkdir(join(home,'sessions'), {recursive:true});
   const log=join(home,'sessions',`test-${id}.jsonl`);
   async function write(tokens,withUsage=true) {
     const records=[
@@ -22,5 +23,5 @@ export async function makeFixture(used=60000) {
   }
   await write(used);
   const append=record=>appendFile(log,JSON.stringify({...record,timestamp:new Date().toISOString()})+'\n');
-  return {id,home,write,append,cleanup:()=>rm(home,{recursive:true,force:true})};
+  return {id,home,userHome,write,append,cleanup:()=>rm(userHome,{recursive:true,force:true})};
 }
