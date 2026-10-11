@@ -7,6 +7,8 @@ A local context inspector for Codex desktop, with horizontal capacity and cache 
 - Estimated context usage and remaining capacity from the latest recorded request.
 - Cached and noncached input, output, and expandable token accounting.
 - Current recorded model, reasoning effort, compaction activity, and measurement timestamps.
+- Latest-usage model attribution, a waiting state after model changes, and the ten most recent recorded switches.
+- Expandable telemetry checks for verified session identity, model metadata, usage, context limit, and cache counters, including when usage is unavailable.
 - A teal Refresh button and Auto-refresh enabled by default, every 15 seconds while visible.
 - Advisory handoff checkpoints at 80% and 90% estimated usage.
 
@@ -52,7 +54,9 @@ To unregister the server, run `codex mcp remove context-status`. Removing the sk
 
 The 80% and 90% checkpoints are advisory, not Codex's compaction trigger. Save a handoff before switching sessions: goal, decisions, relevant files, and next step. An unrelated task can justify starting a new chat at any usage level.
 
-Model changes are detected when the new model appears in recorded turn metadata, typically after the next message. The previous context limit is cleared, and capacity is withheld until fresh usage and a new limit exist. A model-switch timeline and cache-miss diagnosis are not currently provided.
+Model changes are detected when the new model appears in recorded turn metadata, typically after the next message. The previous context limit is cleared, and capacity is withheld until fresh usage and a new limit exist. Older cache measurements retain their model label. The inspector records a switch count and the latest ten transitions; these reflect the available log, not model-picker clicks. Cache-miss causes remain unavailable.
+
+Telemetry checks distinguish observed data, fields not observed yet, and checks that could not run because the log was inaccessible or unverified. Missing evidence does not establish that a Codex version is unsupported. Usage records with explicit turn IDs are accepted for the current turn only; legacy records without turn IDs rely on log order for model attribution.
 
 ## Privacy and scope
 

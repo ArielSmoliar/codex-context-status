@@ -40,7 +40,7 @@ The MCP configuration should use absolute Node and Python paths. If those runtim
 
 ## Verification performed
 
-The local SDK client verified tool metadata, resource loading, fresh reads from isolated synthetic sessions, field redaction, exact identity, and invalid-input handling. A Chrome test host exercised the actual stdio server with a synthetic session log: same-DOM refresh, retained expanded details, failure/retry, unavailable-to-available recovery, session guidance, light/dark theme, 320px width, and no follow-up messages. The 13 existing reader/render tests and skill validation passed.
+The local SDK client verified tool metadata, resource loading, fresh reads from isolated synthetic sessions, field redaction, exact identity, and invalid-input handling. A Chrome test host exercised the actual stdio server with a synthetic session log: same-DOM refresh, retained expanded details, failure/retry, unavailable-to-available recovery, session guidance, light/dark theme, 320px width, and no follow-up messages. The reader/render regression tests and skill validation passed.
 
 Manual verification on Codex desktop confirmed the inspector renders and Refresh updates the existing view. Automated browser tests use a test MCP host; they do not replace desktop compatibility checks after Codex updates.
 

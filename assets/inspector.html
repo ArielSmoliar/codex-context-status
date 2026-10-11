@@ -38,6 +38,7 @@
       <button type="button" class="btn btn-primary" data-action="refresh" aria-label="Refresh context status" aria-describedby="context-refresh-status">Refresh</button>
     </div>
     <div id="context-refresh-status" class="text-small text-muted cs-note" role="status" aria-live="polite" hidden></div>
+    <div class="cs-note text-small" data-field="model-notice" role="status" hidden></div>
   </div>
   <div data-field="unavailable" role="status" hidden></div>
   <div data-section="measurements" hidden>
@@ -52,11 +53,12 @@
     </section>
     <section class="cs-section" aria-label="Latest request input cache reuse">
       <div class="cs-line"><span class="cs-label">Input cache reuse</span><span class="tabular-nums" data-field="cache-value"></span></div>
+      <div class="cs-note text-small text-muted" data-field="cache-model"></div>
       <svg class="cs-chart cs-chart-secondary" data-chart="cache" role="img"></svg>
       <div class="cs-line cs-note text-small tabular-nums"><span data-field="cache-cached"></span><span data-field="cache-fresh"></span></div>
     </section>
     <div class="cs-compaction text-small text-muted" data-field="compaction"></div>
-    <details class="cs-details">
+    <details class="cs-details" data-section="accounting-details">
       <summary class="cursor-interaction">Token accounting &amp; provenance</summary>
       <div class="table-responsive">
         <table class="table table-sm">
@@ -68,6 +70,13 @@
       <dl class="cs-provenance text-small" data-section="provenance"></dl>
     </details>
   </div>
+  <details class="cs-details" data-section="telemetry-details">
+    <summary>Telemetry checks &amp; model changes</summary>
+    <dl class="cs-provenance text-small" data-section="diagnostics"></dl>
+    <div class="text-small text-muted" data-field="diagnostics-note"></div>
+    <div class="cs-note text-small" data-field="switch-summary"></div>
+    <ul class="text-small" data-section="model-switches"></ul>
+  </details>
   <script type="application/json" id="context-status-data">@@CONTEXT_STATUS_DATA@@</script>
   <script>
   (() => {
@@ -113,6 +122,29 @@
     el('model').textContent = data.model || 'Model unavailable';
     el('effort').textContent = data.reasoning_effort ? `Reasoning: ${data.reasoning_effort}` : '';
     el('snapshot').textContent = `Recorded ${stamp(data.usage_timestamp)}`;
+    section('diagnostics').replaceChildren();
+    for (const check of data.diagnostics?.checks || []) {
+      const term=document.createElement('dt'), detail=document.createElement('dd');
+      term.textContent=check.label;
+      const checkLabel={observed:'Observed',unavailable:'Unavailable',not_checked:'Not checked',not_observed:'Not observed'};
+      detail.textContent=`${checkLabel[check.status] || 'Unavailable'} · ${check.detail}`;
+      section('diagnostics').append(term,detail);
+    }
+    el('diagnostics-note').textContent=data.diagnostics?.note || 'Telemetry checks unavailable.';
+    section('model-switches').replaceChildren();
+    for (const change of data.model_switches || []) {
+      const row=document.createElement('li');
+      row.textContent=`${change.from_model} → ${change.to_model} · ${stamp(change.timestamp)}`;
+      section('model-switches').append(row);
+    }
+    el('switch-summary').textContent=data.model_switch_count
+      ? `${fmt(data.model_switch_count)} ${data.model_switch_count === 1 ? 'model change' : 'model changes'} recorded${data.model_switch_count > 10 ? ' · Showing the latest 10' : ''}`
+      : numeric(data.model_switch_count) ? 'No model changes recorded in this snapshot.' : 'Model-change history unavailable.';
+    const waitingForModel=data.usage_state === 'awaiting_model_usage';
+    el('model-notice').hidden=!waitingForModel;
+    el('model-notice').textContent=waitingForModel
+      ? `Waiting for usage from ${data.model || 'the new model'}. Latest measurements belong to ${data.latest_usage_model || 'an unknown model'}.` : '';
+    el('cache-model').textContent=`Latest request model: ${data.latest_usage_model || 'unavailable'}${waitingForModel ? ' · Before the model change' : ''}`;
     const refresh = root.querySelector('[data-action="refresh"]');
     const refreshStatus = root.querySelector('#context-refresh-status');
     let requesting = false;
@@ -179,7 +211,7 @@
           ? 'Prepare a handoff · Continue focused work, and start a new session at the next task boundary.'
           : 'Continue this session · Recorded capacity has room. Start fresh when you switch to an unrelated task.';
     } else {
-      root.querySelector('[data-chart="capacity"]').hidden = true;
+      root.querySelector('[data-chart="capacity"]').setAttribute('hidden','');
       section('capacity-scale').hidden = true;
       el('capacity-value').textContent = 'Unavailable';
       el('capacity-note').textContent = data.capacity_unavailable_reason || 'No valid capacity measurement.';
@@ -192,7 +224,7 @@
       el('cache-cached').textContent = `Cached ${fmt(cached)}`;
       el('cache-fresh').textContent = `Noncached ${fmt(input-cached)}`;
     } else {
-      root.querySelector('[data-chart="cache"]').hidden = true;
+      root.querySelector('[data-chart="cache"]').setAttribute('hidden','');
       el('cache-value').textContent = input === 0 ? 'No input tokens recorded' : 'Unavailable';
     }
     el('compaction').textContent = !numeric(data.compactions_observed) ? 'Compaction history unavailable' : data.compactions_observed === 0 ? 'No compactions observed in this log' : `${fmt(data.compactions_observed)} compactions observed · Latest ${stamp(data.last_compaction_at)}`;
@@ -207,6 +239,7 @@
     const provenance = [
       ['Source','Local session log snapshot'],
       ['Usage record',data.usage_record_type || 'Unavailable'],
+      ['Latest usage model',data.latest_usage_model || 'Unavailable'],
       ['Read at',stamp(data.observed_at)],
       ['Record age at read',numeric(data.usage_age_seconds) ? `${fmt(data.usage_age_seconds)} seconds` : 'Unavailable'],
       ['Window recorded',stamp(data.window_timestamp)],

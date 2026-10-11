@@ -14,6 +14,48 @@ COUNTERS = ('input_tokens', 'cached_input_tokens', 'cache_write_input_tokens',
             'output_tokens', 'reasoning_output_tokens', 'total_tokens')
 
 
+class TelemetryError(ValueError):
+    def __init__(self, code, message):
+        super().__init__(message)
+        self.code = code
+
+
+def diagnostics(data, failure=None):
+    """Describe observed evidence, never infer unsupported formats from silence."""
+    verified = failure is None
+    checks = [{'label': 'Session identity', 'status': 'observed' if verified else 'unavailable',
+               'detail': 'Exact chat verified.' if verified else data['reason']}]
+    for label, present, detail in [
+        ('Model metadata', bool(data.get('model')), 'Recorded model and turn metadata.'),
+        ('Usage events', any(value is not None for value in (data.get('latest_request') or {}).values()), 'Recognized request usage record.'),
+        ('Context limit', bool(data.get('reported_context_window')), 'Runtime-reported limit for the recorded model.'),
+        ('Cache counters', (data.get('latest_request') or {}).get('cached_input_tokens') is not None,
+         'Cached input is included in the latest recorded request.'),
+    ]:
+        checks.append({'label': label,
+                       'status': 'not_checked' if not verified else 'observed' if present else 'not_observed',
+                       'detail': 'The session could not be verified or read.' if not verified else detail if present
+                       else 'Not observed in this snapshot; this does not prove it is unsupported.'})
+    return {'checks': checks, 'failure_code': failure,
+            'note': 'Checks describe local recorded evidence, not a guarantee of compatibility with future Codex versions.'}
+
+
+def collect(home, thread, session_file=None):
+    try:
+        if not thread or not re.fullmatch(r'[a-zA-Z0-9_-]{1,128}', thread):
+            raise TelemetryError('invalid_thread', 'A verified current chat ID is required.')
+        path = session_file or locate(home.expanduser(), thread)
+        return inspect(path.expanduser(), thread)
+    except (OSError, ValueError, sqlite3.Error) as error:
+        # Never expose filesystem paths or arbitrary exception content to the app.
+        code = error.code if isinstance(error, TelemetryError) else 'read_failed'
+        reason = str(error) if isinstance(error, TelemetryError) else 'Local telemetry could not be read. Check local filesystem access.'
+        result = {'status': 'unavailable', 'reason': reason, 'thread_id': thread,
+                  'observed_at': dt.datetime.now(dt.timezone.utc).isoformat()}
+        result['diagnostics'] = diagnostics(result, code)
+        return result
+
+
 def number(value):
     if isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) and value >= 0:
         return value
@@ -25,6 +67,11 @@ def counts(value):
     return {k: number(value.get(k)) for k in COUNTERS}
 
 
+def usage_counts(value):
+    parsed = counts(value)
+    return parsed if any(value is not None for value in parsed.values()) else None
+
+
 def age(value, now):
     try:
         return max(0, round((now - dt.datetime.fromisoformat(value.replace('Z', '+00:00'))).total_seconds(), 1))
@@ -33,6 +80,8 @@ def age(value, now):
 
 
 def locate(home, thread):
+    if not home.is_dir():
+        raise TelemetryError('home_unavailable', 'The local Codex data directory is unavailable.')
     def version(path):
         match = re.search(r'state_(\d+)', path.name)
         return int(match.group(1)) if match else 0
@@ -52,7 +101,7 @@ def locate(home, thread):
         matches.extend((home / directory).rglob('*' + thread + '.jsonl'))
     if len(matches) == 1:
         return matches[0]
-    raise ValueError('No unique readable session log found for the exact chat ID.')
+    raise TelemetryError('session_not_found', 'No unique readable session log found for the exact chat ID.')
 
 
 def inspect(path, thread, now=None):
@@ -68,6 +117,10 @@ def inspect(path, thread, now=None):
     invalidated = False
     quota = quota_at = None
     malformed = 0
+    model_epoch = 0
+    usage_epoch = None
+    switches = []
+    switch_count = 0
     with path.open('rb') as handle:
         snapshot_size = os.fstat(handle.fileno()).st_size
         while handle.tell() < snapshot_size:
@@ -86,10 +139,15 @@ def inspect(path, thread, now=None):
             if kind == 'session_meta':
                 identity = payload.get('id')
                 if identity != thread:
-                    raise ValueError('Session identity does not match the requested chat.')
+                    raise TelemetryError('identity_mismatch', 'Session identity does not match the requested chat.')
             elif kind == 'turn_context':
                 new_model = payload.get('model')
+                new_model = new_model if isinstance(new_model, str) and new_model else None
                 if model is not None and new_model is not None and model != new_model:
+                    switch_count += 1
+                    switches.append({'from_model': model, 'to_model': new_model, 'timestamp': at})
+                    switches = switches[-10:]
+                    model_epoch += 1
                     window = window_at = window_model = None
                     invalidated = True
                 model = new_model if isinstance(new_model, str) else model
@@ -101,9 +159,11 @@ def inspect(path, thread, now=None):
                 compactions.append(at)
                 invalidated = True
             elif kind == 'token_usage_record' and payload.get('thread_id') == thread:
-                if isinstance(payload.get('usage'), dict):
-                    latest = counts(payload['usage'])
+                candidate = usage_counts(payload.get('usage'))
+                if candidate is not None and payload.get('turn_id') == current_turn:
+                    latest = candidate
                     usage_at, usage_kind, usage_model = at, kind, model
+                    usage_epoch = model_epoch
                     invalidated = False
                 if isinstance(payload.get('thread_token_usage'), dict):
                     cumulative = counts(payload['thread_token_usage'])
@@ -112,9 +172,11 @@ def inspect(path, thread, now=None):
             elif kind == 'event_msg' and payload.get('type') == 'token_count':
                 info = payload.get('info')
                 if isinstance(info, dict):
-                    if isinstance(info.get('last_token_usage'), dict):
-                        latest = counts(info['last_token_usage'])
+                    candidate = usage_counts(info.get('last_token_usage'))
+                    if candidate is not None:
+                        latest = candidate
                         usage_at, usage_kind, usage_model = at, 'event_msg/token_count', model
+                        usage_epoch = model_epoch
                         invalidated = False
                     if isinstance(info.get('total_token_usage'), dict):
                         cumulative = counts(info['total_token_usage'])
@@ -130,9 +192,14 @@ def inspect(path, thread, now=None):
                             quota[key] = {k: number(value.get(k)) for k in ('used_percent', 'window_minutes', 'resets_at')}
                     quota_at = at
     if identity != thread:
-        raise ValueError('No matching session identity found; refusing unverified telemetry.')
+        raise TelemetryError('identity_unverified', 'No matching session identity found; refusing unverified telemetry.')
+    result.update(model=model, reasoning_effort=effort, latest_usage_model=usage_model,
+                  model_switches=switches, model_switch_count=switch_count,
+                  reported_context_window=window, ignored_malformed_lines=malformed)
     if latest is None:
         result['reason'] = 'The verified log contains no supported usage measurements.'
+        result['usage_state'] = 'not_observed'
+        result['diagnostics'] = diagnostics(result)
         return result
     footprint = latest['total_tokens']
     if footprint is None and latest['input_tokens'] is not None and latest['output_tokens'] is not None:
@@ -151,6 +218,8 @@ def inspect(path, thread, now=None):
             cache_ratio = round(100 * cached / inp, 2)
     result.update(status='ok', model=model, reasoning_effort=effort,
                   latest_usage_model=usage_model, usage_timestamp=usage_at,
+                  usage_state=('awaiting_model_usage' if usage_epoch != model_epoch else
+                               'awaiting_post_compaction_usage' if invalidated else 'recorded'),
                   usage_age_seconds=age(usage_at, now), usage_record_type=usage_kind,
                   reported_context_window=window, window_timestamp=window_at, window_model=window_model,
                   latest_request=latest, current_turn_cumulative=turn_usage, thread_cumulative=cumulative,
@@ -163,6 +232,7 @@ def inspect(path, thread, now=None):
                   ignored_malformed_lines=malformed,
                   unavailable=['exact_live_context_occupancy', 'per_source_token_breakdown',
                                'cache_miss_diagnostics', 'automatic_compaction_threshold', 'compaction_content_diff'])
+    result['diagnostics'] = diagnostics(result)
     return result
 
 
@@ -171,7 +241,8 @@ def markdown(data):
         return 'Context status unavailable: ' + data.get('reason', 'No measurements.')
     def fmt(value):
         return 'Unavailable' if value is None else f'{value:,}' if isinstance(value, (int, float)) else str(value).replace('|', '\\|').replace('\n', ' ')
-    rows = [('Model', data['model']), ('Reasoning effort', data['reasoning_effort']),
+    rows = [('Model', data['model']), ('Latest usage model', data.get('latest_usage_model')),
+            ('Usage state', data.get('usage_state')), ('Reasoning effort', data['reasoning_effort']),
             ('Reported context limit', data['reported_context_window'])]
     estimate = data['capacity_estimate']
     if estimate:
@@ -208,14 +279,8 @@ def main():
     parser.add_argument('--timezone', default='UTC', help='Client IANA timezone for the visualization; defaults to UTC.')
     args = parser.parse_args()
     thread = args.thread_id or os.environ.get('CODEX_THREAD_ID') or os.environ.get('CODEX_SESSION_ID')
-    try:
-        if not thread or not re.fullmatch(r'[a-zA-Z0-9_-]{1,128}', thread):
-            raise ValueError('No valid current chat ID. Supply a verified --thread-id; never guess the newest session.')
-        home = args.codex_home or Path(os.environ.get('CODEX_HOME', str(Path.home() / '.codex')))
-        path = args.session_file or locate(home.expanduser(), thread)
-        result = inspect(path.expanduser(), thread)
-    except (ValueError, OSError, sqlite3.Error) as exc:
-        result = {'status': 'unavailable', 'reason': str(exc), 'thread_id': thread}
+    home = args.codex_home or Path(os.environ.get('CODEX_HOME', str(Path.home() / '.codex')))
+    result = collect(home, thread, args.session_file)
     if args.visualization:
         from render_status import render
         try:

@@ -21,12 +21,16 @@ try {
  const one=await client.callTool({name:'open_context_status',arguments:args});
  assert.equal(one.structuredContent.thread_id,args.thread_id);
  assert.equal(one.structuredContent.status,'ok');
+ assert.equal(one.structuredContent.latest_usage_model,'Test model');
+ assert.equal(one.structuredContent.diagnostics.checks[0].status,'observed');
  assert.equal(one.structuredContent.source_path,undefined);
  assert.equal(one.structuredContent.recorded_account_rate_limits,undefined);
  const two=await client.callTool({name:'read_context_status',arguments:args});
  assert.ok(two.structuredContent.observed_at > one.structuredContent.observed_at);
  const missing=await client.callTool({name:'read_context_status',arguments:{...args,thread_id:'00000000-0000-0000-0000-000000000000'}});
  assert.equal(missing.structuredContent.status,'unavailable');
+ assert.equal(missing.structuredContent.diagnostics.failure_code,'session_not_found');
+ assert.ok(!JSON.stringify(missing).includes(sandbox.home));
  const invalid=await client.callTool({name:'read_context_status',arguments:{...args,thread_id:'../../bad'}});
  assert.equal(invalid.isError,true);
  console.log('PASS: local stdio tools, UI resource, fresh reads, redaction, exact chat binding, invalid input');

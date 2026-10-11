@@ -21,6 +21,8 @@ The MCP inspector includes an **Auto-refresh** checkbox enabled by default. It r
 
 ## Session timing guidance
 
+The inspector separates the currently recorded model from `latest_usage_model`. After a recorded switch, old measurements retain their original attribution and a waiting notice appears until fresh usage is available. Expand **Telemetry checks & model changes** for observed/missing evidence and the latest ten transitions. A missing field does not prove an unsupported Codex version. On read or identity failures, checks remain unperformed rather than falsely reporting absent data. These events reflect the available log, not immediate model-picker changes, and cannot explain cache-miss causes.
+
 The inspector offers heuristic guidance from the latest valid capacity estimate: below 80%, continue; 80–89.9%, prepare a handoff and switch at a task boundary; 90% or higher, start a new session soon before substantial work. These are advisory checkpoints, not a known Codex compaction threshold or a prediction of failure. Read the usage timestamp; unreported work can change the picture. When capacity is unavailable after a model change or compaction, withhold a capacity-based recommendation. Switching to an unrelated task is also a good reason for a new session. A handoff should include the goal, decisions, relevant files, and next step. Never automatically start a new chat or imply its history transfers without a handoff.
 
 ## Fallback: inline snapshot
