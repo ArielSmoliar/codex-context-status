@@ -86,6 +86,13 @@ six synthetic cases; real-task effectiveness and outside-user adoption remain
 unverified. Use the [results template](references/validation-results.md)
 to keep baseline, assisted, and synthetic observations separate.
 
+The [three-person pilot packet](references/pilot/README.md) has participant setup
+instructions, a proposed trial order, an invitation draft, and private scorecard
+templates. Its P01–P03 slots are placeholders, not enrolled users.
+
+The [new-user landing page source](site/README.md) provides a capability tour,
+interactive synthetic examples, and pinned installation commands.
+
 ## Development
 
 ```sh
