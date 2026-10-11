@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
 import sqlite3
 import tempfile
@@ -169,6 +170,61 @@ class Tests(unittest.TestCase):
         self.assertEqual(before, db.read_bytes())
         with self.assertRaises(ValueError):
             mod.locate(home, 'missing-chat')
+
+    def mutate_after_snapshot_size(self, mutation):
+        original = os.fstat
+
+        def changed(fd):
+            snapshot = original(fd)
+            mutation()
+            return snapshot
+
+        with patch.object(mod.os, 'fstat', side_effect=changed):
+            return mod.inspect(self.path, 'test-chat')
+
+    def test_append_after_opening_size_waits_for_next_refresh(self):
+        self.read([context(), usage()])
+        appended = (json.dumps(usage({'total_tokens': 500})) + '\n').encode()
+
+        def append():
+            with self.path.open('ab') as handle:
+                handle.write(appended)
+
+        r = self.mutate_after_snapshot_size(append)
+        self.assertEqual(r['latest_request']['total_tokens'], 120)
+        self.assertEqual(mod.inspect(self.path, 'test-chat')['latest_request']['total_tokens'], 500)
+
+    def test_completed_partial_record_waits_for_next_refresh(self):
+        appended = (json.dumps(usage({'total_tokens': 500})) + '\n').encode()
+        self.read([context(), usage()], appended[:-10])
+
+        def finish():
+            with self.path.open('ab') as handle:
+                handle.write(appended[-10:])
+
+        r = self.mutate_after_snapshot_size(finish)
+        self.assertEqual(r['latest_request']['total_tokens'], 120)
+        self.assertEqual(r['ignored_malformed_lines'], 0)
+        self.assertEqual(mod.inspect(self.path, 'test-chat')['latest_request']['total_tokens'], 500)
+
+    def test_truncation_during_read_stops_at_eof_and_discards_old_usage(self):
+        self.read([context(), usage()])
+        metadata = (json.dumps(event('session_meta', {'id': 'test-chat'})) + '\n').encode()
+        r = self.mutate_after_snapshot_size(lambda: self.path.write_bytes(metadata))
+        self.assertEqual(r['status'], 'unavailable')
+        self.assertNotIn('latest_request', r)
+
+    def test_rotation_finishes_open_snapshot_then_revalidates_identity(self):
+        self.read([context(), usage()])
+
+        def rotate():
+            self.path.rename(self.path.with_suffix('.old'))
+            self.path.write_text(json.dumps(event('session_meta', {'id': 'different-chat'})) + '\n')
+
+        r = self.mutate_after_snapshot_size(rotate)
+        self.assertEqual(r['latest_request']['total_tokens'], 120)
+        with self.assertRaises(mod.TelemetryError):
+            mod.inspect(self.path, 'test-chat')
 
 
 if __name__ == '__main__':

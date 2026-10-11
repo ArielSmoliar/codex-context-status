@@ -78,6 +78,8 @@ Use `CHROME_EXECUTABLE_PATH` to test with an existing Chromium/Chrome binary ins
 
 Tests use temporary, synthetic session logs. They never need your Codex account or personal chats. Coverage includes identity validation, partial log records, model changes, compaction, redaction, real stdio tool calls, same-view refresh, default-on polling, pause/resume, failure recovery, and narrow/light/dark presentation.
 
+Run `npm run benchmark` to measure reader and one-shot CLI latency using temporary synthetic logs. See [refresh performance](references/performance.md) for paired comparisons, measured results, and scope. The reader still scans a fresh size-bounded snapshot on each refresh.
+
 The generated `mcp/inspector.html` is committed for direct installation. After editing the shared template, bridge, or CSS, rebuild and commit the generated file. CI checks that it matches its sources.
 
 See [telemetry details](references/telemetry.md), [MCP implementation](mcp/README.md), and the [development roadmap](ROADMAP.md).

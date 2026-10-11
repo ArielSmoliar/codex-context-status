@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Local context and cache inspector for Codex desktop",
   "scripts": {
+    "benchmark": "python3 scripts/benchmark_refresh.py",
     "build": "python3 mcp/build_widget.py",
     "test:unit": "python3 -m unittest discover -s tests -p 'test_*.py'",
     "test:mcp": "node tests/test-mcp.mjs",

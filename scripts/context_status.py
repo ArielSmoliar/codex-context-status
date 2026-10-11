@@ -122,9 +122,12 @@ def inspect(path, thread, now=None):
     switches = []
     switch_count = 0
     with path.open('rb') as handle:
-        snapshot_size = os.fstat(handle.fileno()).st_size
-        while handle.tell() < snapshot_size:
-            line = handle.readline(snapshot_size - handle.tell())
+        # Bound this scan to the opening size without seeking twice per record.
+        # Appended bytes belong to the next refresh; EOF also handles truncation.
+        remaining = os.fstat(handle.fileno()).st_size
+        while remaining > 0:
+            line = handle.readline(remaining)
+            remaining -= len(line)
             if not line.endswith(b'\n'):
                 break
             try:
