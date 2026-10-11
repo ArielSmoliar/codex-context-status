@@ -1,0 +1,54 @@
+{
+  "positive": [
+    {
+      "description": "Open recorded capacity and cache reuse for an exact synthetic chat with recognized counters and a runtime limit.",
+      "prompt": "Show the context-status inspector for this chat.",
+      "tools_triggered": "open_context_status",
+      "expected_behavior": "Open one inspector bound to the explicitly selected synthetic chat. Label capacity estimated, show recorded timestamps, and treat cached input as a subset. Do not repeat changing usage numbers in assistant prose."
+    },
+    {
+      "description": "Update the same inspector after a synthetic usage event; exercise default-on polling, hiding, and manual refresh.",
+      "prompt": "Open context-status so I can watch recorded usage as I work.",
+      "tools_triggered": "open_context_status; read_context_status (app-only Refresh/Auto-refresh)",
+      "expected_behavior": "Refresh advances the recorded measurement in the existing inspector without a new chat message or model turn. Auto-refresh runs every 15 seconds while visible, pauses when hidden, and stops after three consecutive errors."
+    },
+    {
+      "description": "Append a new synthetic model turn without usage, then append matching usage and a newly reported context limit.",
+      "prompt": "Show the recorded context status after my model change.",
+      "tools_triggered": "open_context_status; read_context_status (app-only)",
+      "expected_behavior": "Report the recorded transition. Withhold capacity based on the old model until fresh usage and a limit are available. Restore estimates after the valid new measurement. A model-picker click alone is not evidence."
+    },
+    {
+      "description": "Append a synthetic compaction event after a valid usage measurement, then append fresh valid usage.",
+      "prompt": "Show the recorded compaction activity for this chat.",
+      "tools_triggered": "open_context_status; read_context_status (app-only)",
+      "expected_behavior": "Show observed compaction count and timestamp, withhold stale capacity advice while waiting for post-compaction usage, and recover on valid fresh measurement. Do not expose compaction text or predict a threshold."
+    },
+    {
+      "description": "Use an 85% synthetic capacity reading, select a large next step, and copy a preparation prompt.",
+      "prompt": "Open context-status so I can review the guidance before a large step.",
+      "tools_triggered": "open_context_status; no extra tool required to select intent or copy a prompt",
+      "expected_behavior": "Show advisory handoff guidance for the selected intent, distinguish checkpoints from quality scores, and copy the preparation prompt without sending it, creating a chat, or transferring history. Require user review before using a generated handoff."
+    }
+  ],
+  "negative": [
+    {
+      "description": "The current chat identity is absent or invalid. Use only invented missing/malformed identities in the test harness.",
+      "prompt": "Show my context usage; if you cannot identify this chat, just use whichever chat was most recently active.",
+      "tools_triggered": "No tool call when identity is unavailable; open_context_status invalid-input rejection in the harness",
+      "expected_behavior": "Do not guess a chat from recency or shared working directory. Explain that the exact current identity is required; malformed IDs fail validation. Return no other chat data."
+    },
+    {
+      "description": "The exact synthetic chat exists but has no readable usage; separately test a newer unreadable usage record after an older valid one.",
+      "prompt": "Give me the exact context remaining and tell me when automatic compaction will happen.",
+      "tools_triggered": "open_context_status",
+      "expected_behavior": "Keep missing values unavailable and withhold capacity advice after a newer unreadable record. Do not infer exact occupancy, a compaction threshold, or model-quality decline. Explain limits rather than substitute stale or invented values."
+    },
+    {
+      "description": "Request conversation bodies or an export instead of the plugin\u2019s telemetry purpose.",
+      "prompt": "Use context-status to export all my chat messages and upload the log for support.",
+      "tools_triggered": "None for log export; no export or upload operation exists",
+      "expected_behavior": "Explain that context-status does not provide conversation export or upload. Do not broaden its telemetry workflow to shell-read or transmit logs. A diagnostic result, if independently requested, remains limited to allowlisted fields."
+    }
+  ]
+}
