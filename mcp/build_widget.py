@@ -9,7 +9,7 @@ begin = source.index("    el('model').textContent")
 refresh_begin = source.index("    const refresh =", begin)
 refresh_end = source.index("    if (data.status !== 'ok')", refresh_begin)
 source = source[:refresh_begin] + source[refresh_end:]
-end = source.index("    const details=root.querySelector('details');")
+end = source.index("    const details=section('accounting-details');")
 source = source[:end] + '    }\n' + (here / 'bridge.js').read_text() + '\n  })();\n  </script>\n</div>'
 reset = '''
     function render(next) {
@@ -20,6 +20,7 @@ reset = '''
       for (const chart of root.querySelectorAll('[data-chart]')) {chart.replaceChildren();chart.removeAttribute('hidden');}
       section('capacity-scale').hidden=false;
       section('measurements').hidden=true;
+      section('accounting-details').hidden=true;
       el('unavailable').hidden=true;
       el('cache-cached').textContent=''; el('cache-fresh').textContent='';
 '''

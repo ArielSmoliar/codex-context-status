@@ -34,6 +34,14 @@
     #context-status-inspector .cs-provenance { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(0, 2fr); gap: 8px 16px; margin: 20px 0; }
     #context-status-inspector .cs-provenance dt { color: var(--muted-foreground); }
     #context-status-inspector .cs-provenance dd { margin: 0; overflow-wrap: anywhere; }
+    #context-status-inspector .cs-advice { margin: 24px 0; }
+    #context-status-inspector .cs-advice p { max-width: 72ch; margin: 8px 0; }
+    #context-status-inspector .cs-control { font: inherit; color: var(--foreground); background: var(--color-background-primary, var(--muted)); border: 1px solid var(--border); border-radius: 6px; padding: 8px; max-width: 100%; }
+    #context-status-inspector .cs-control:focus-visible { outline: 2px solid var(--viz-series-1); outline-offset: 3px; }
+    #context-status-inspector .cs-handoff { width: 100%; min-height: 220px; resize: vertical; line-height: 1.5; }
+    #context-status-inspector .cs-advice-title { font-weight: 600; }
+    #context-status-inspector .cs-copy:hover:not(:disabled) { background: var(--muted); }
+    #context-status-inspector .cs-copy:active:not(:disabled) { border-color: var(--viz-series-1); }
     @media (max-width: 420px) {
       #context-status-inspector .cs-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
       #context-status-inspector .cs-legend-item { flex-wrap: wrap; gap: 4px 7px; }
@@ -65,8 +73,6 @@
       <div class="cs-scale text-small text-muted tabular-nums" data-section="capacity-scale"><span>0</span><span data-field="half-window"></span><span data-field="window"></span></div>
       <div class="cs-legend text-small" data-section="capacity-legend"></div>
       <div class="cs-note text-small text-muted" data-field="capacity-note"></div>
-      <div class="cs-note" data-field="session-guidance" role="status" aria-live="polite"></div>
-      <div class="text-small text-muted">Guidance uses 80% / 90% checkpoints, not Codex’s compaction threshold. For a new session, save a handoff with the goal, decisions, files, and next step.</div>
     </section>
     <section class="cs-section" aria-label="Latest request input cache reuse">
       <div class="cs-line"><span class="cs-label">Input cache reuse</span><span class="tabular-nums" data-field="cache-value"></span></div>
@@ -75,18 +81,49 @@
       <div class="cs-line cs-note text-small tabular-nums"><span data-field="cache-cached"></span><span data-field="cache-fresh"></span></div>
     </section>
     <div class="cs-compaction text-small text-muted" data-field="compaction"></div>
-    <details class="cs-details" data-section="accounting-details">
-      <summary class="cursor-interaction">Token accounting &amp; provenance</summary>
-      <div class="table-responsive">
-        <table class="table table-sm">
-          <caption class="sr-only">Recorded token consumption by request, current turn, and thread. Cached input and reasoning output are subsets.</caption>
-          <thead><tr><th scope="col">Tokens</th><th scope="col" class="text-end">Latest request</th><th scope="col" class="text-end">Current turn</th><th scope="col" class="text-end">Thread total</th></tr></thead>
-          <tbody data-section="accounting"></tbody>
-        </table>
-      </div>
-      <dl class="cs-provenance text-small" data-section="provenance"></dl>
-    </details>
   </div>
+  <section class="cs-advice" aria-label="Session advice">
+    <div class="cs-line">
+      <span class="cs-label">Session advice</span>
+      <label class="text-small" for="context-next-step">Next step
+        <select class="cs-control" id="context-next-step" data-action="session-intent">
+          <option value="continue">Continue this task</option>
+          <option value="large">A large step in this task</option>
+          <option value="unrelated">An unrelated task</option>
+        </select>
+      </label>
+    </div>
+    <p class="cs-advice-title" data-field="session-guidance"></p>
+    <p class="text-small" data-field="session-reason"></p>
+    <p class="text-small text-muted">Advisory 80% / 90% checkpoints, not Codex’s compaction threshold. Recorded usage excludes unreported work; task size is not predicted.</p>
+    <details class="cs-details" data-section="handoff-details">
+      <summary>Handoff checklist &amp; prompt</summary>
+      <p class="text-small">Ask the current chat to write a handoff, review it, then paste it into a new chat. History does not transfer automatically.</p>
+      <ol class="text-small">
+        <li>Capture the goal, decisions, progress, and open questions.</li>
+        <li>Include files, branch or PR, verification results, and the next action.</li>
+        <li>Check for secrets and stale assumptions before sharing.</li>
+      </ol>
+      <label class="text-small" for="context-handoff-prompt">Prompt to paste into the current chat</label>
+      <textarea id="context-handoff-prompt" class="cs-control cs-handoff" data-field="handoff-prompt" readonly spellcheck="false"></textarea>
+      <div class="cs-line cs-note">
+        <button type="button" class="btn cs-copy" data-action="copy-handoff">Copy handoff prompt</button>
+        <span class="text-small text-muted" data-field="handoff-copy-status" role="status"></span>
+      </div>
+      <p class="text-small text-muted">This is a prompt, not a generated summary. Copying it sends no message and starts no new chat.</p>
+    </details>
+  </section>
+  <details class="cs-details" data-section="accounting-details" hidden>
+    <summary class="cursor-interaction">Token accounting &amp; provenance</summary>
+    <div class="table-responsive">
+      <table class="table table-sm">
+        <caption class="sr-only">Recorded token consumption by request, current turn, and thread. Cached input and reasoning output are subsets.</caption>
+        <thead><tr><th scope="col">Tokens</th><th scope="col" class="text-end">Latest request</th><th scope="col" class="text-end">Current turn</th><th scope="col" class="text-end">Thread total</th></tr></thead>
+        <tbody data-section="accounting"></tbody>
+      </table>
+    </div>
+    <dl class="cs-provenance text-small" data-section="provenance"></dl>
+  </details>
   <details class="cs-details" data-section="telemetry-details">
     <summary>Telemetry checks &amp; model changes</summary>
     <dl class="cs-provenance text-small" data-section="diagnostics"></dl>
@@ -135,6 +172,69 @@
         row.append(swatch,label,value); section('capacity-legend').appendChild(row);
       }
     }
+    const intent = root.querySelector('[data-action="session-intent"]');
+    const handoffPrompt = el('handoff-prompt');
+    handoffPrompt.value = `Write a concise handoff for continuing this task in a new Codex chat. Use only established conversation and workspace facts; mark anything uncertain or not checked.
+
+Include:
+- Goal, scope, constraints, and relevant user preferences.
+- Completed work and important decisions with reasons.
+- Relevant repository, branch or PR, files, and uncommitted changes.
+- Verification performed, results, and checks still needed.
+- Blockers, open questions, and the first concrete next action.
+
+Do not include secrets or unrelated personal information. Do not infer missing details, make changes, or start a new chat. Return a self-contained handoff I can review and paste into the next chat.`;
+    function renderAdvice() {
+      const estimate = data.capacity_estimate;
+      const limit = data.reported_context_window;
+      const valid = data.status === 'ok' && !String(data.usage_state || '').startsWith('awaiting_') && estimate && numeric(estimate.used_tokens) && numeric(limit) && limit > 0;
+      const ratio = valid ? estimate.used_tokens / limit : null;
+      let title, reason;
+      if (intent.value === 'unrelated') {
+        title = 'Start a new session for the new task';
+        reason = 'Your next task is unrelated. A separate chat keeps its instructions focused. Save a handoff here if you will return to this work.';
+      } else if (ratio === null) {
+        title = 'Timing unavailable';
+        const waiting = {
+          awaiting_model_usage: 'The model changed; wait for a usage record from the new model.',
+          awaiting_post_compaction_usage: 'Compaction was recorded; wait for fresh usage before judging headroom.',
+          awaiting_readable_usage: 'A newer usage record is unreadable; wait for valid telemetry.'
+        };
+        reason = (waiting[data.usage_state] || 'There is no valid capacity estimate. Refresh after a completed response.') + ' You can prepare a handoff now; missing telemetry alone is not a reason to restart.';
+      } else if (ratio >= .9) {
+        title = 'Start a new session soon';
+        reason = 'Estimated headroom is low. Save a handoff before substantial work and switch at a natural stopping point. A small finishing step can stay here.';
+      } else if (ratio >= .8) {
+        title = 'Prepare a handoff';
+        reason = intent.value === 'large'
+          ? 'You are planning a large step with limited estimated headroom. Save a handoff and consider doing that step in a new chat.'
+          : 'Continue focused work, then switch at the next task boundary. Capture decisions and the next action while they are available.';
+      } else if (intent.value === 'large') {
+        title = 'Plan the next step before continuing';
+        reason = 'Recorded capacity has room, but the size of your next step is unknown. Break it into checkpoints and prepare a handoff if it will introduce substantial new material.';
+      } else {
+        title = 'Continue this session';
+        reason = 'Recorded capacity has room for continued work on this task. Reassess at the next task boundary or before adding substantial new material.';
+      }
+      if (valid && numeric(data.compactions_observed) && data.compactions_observed > 0 && intent.value !== 'unrelated') {
+        reason += ' Compaction appears in this log; confirm that key constraints are still understood. Its count alone does not require a new chat.';
+      }
+      // Do not repeatedly announce advice during background polling.
+      el('session-guidance').textContent = title;
+      el('session-reason').textContent = reason;
+    }
+    intent.addEventListener('change', renderAdvice);
+    root.querySelector('[data-action="copy-handoff"]').addEventListener('click', async () => {
+      const button = root.querySelector('[data-action="copy-handoff"]');
+      button.disabled = true;
+      try {
+        await navigator.clipboard.writeText(handoffPrompt.value);
+        el('handoff-copy-status').textContent = 'Copied. Paste it into the current chat when ready.';
+      } catch {
+        handoffPrompt.focus(); handoffPrompt.select();
+        el('handoff-copy-status').textContent = 'Clipboard unavailable. Prompt selected; use your usual copy shortcut.';
+      } finally { button.disabled = false; }
+    });
 
     function render(next) {
       if (!next || typeof next !== 'object' || !next.thread_id) return;
@@ -144,9 +244,11 @@
       for (const chart of root.querySelectorAll('[data-chart]')) {chart.replaceChildren();chart.removeAttribute('hidden');}
       section('capacity-scale').hidden=false;
       section('measurements').hidden=true;
+      section('accounting-details').hidden=true;
       el('unavailable').hidden=true;
       el('cache-cached').textContent=''; el('cache-fresh').textContent='';
     el('model').textContent = data.model || 'Model unavailable';
+    renderAdvice();
     el('effort').textContent = data.reasoning_effort ? `Reasoning: ${data.reasoning_effort}` : '';
     el('snapshot').textContent = `Recorded ${stamp(data.usage_timestamp)}`;
     section('diagnostics').replaceChildren();
@@ -178,6 +280,7 @@
       return;
     }
     section('measurements').hidden = false;
+    section('accounting-details').hidden = false;
     const latest = data.latest_request || {};
     const estimate = data.capacity_estimate;
     const limit = data.reported_context_window;
@@ -195,17 +298,11 @@
       el('half-window').textContent = fmt(limit / 2);
       el('window').textContent = `${fmt(limit)} tokens`;
       el('capacity-note').textContent = used > limit ? 'Recorded footprint exceeds the reported limit; displayed bar is capped.' : 'Basis: last recorded input + output';
-      el('session-guidance').textContent = used / limit >= .9
-        ? 'Start a new session soon · Save a handoff before the next large task. Estimated headroom is low.'
-        : used / limit >= .8
-          ? 'Prepare a handoff · Continue focused work, and start a new session at the next task boundary.'
-          : 'Continue this session · Recorded capacity has room. Start fresh when you switch to an unrelated task.';
     } else {
       root.querySelector('[data-chart="capacity"]').setAttribute('hidden','');
       section('capacity-scale').hidden = true;
       el('capacity-value').textContent = 'Unavailable';
       el('capacity-note').textContent = data.capacity_unavailable_reason || 'No valid capacity measurement.';
-      el('session-guidance').textContent = 'Timing unavailable · Refresh after the next completed response. Save a handoff if you plan to switch tasks.';
     }
     const input = latest.input_tokens, cached = latest.cached_input_tokens;
     if (numeric(input) && input > 0 && numeric(cached) && cached <= input) {
