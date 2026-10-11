@@ -9,8 +9,9 @@
     "build": "python3 mcp/build_widget.py",
     "test:unit": "python3 -m unittest discover -s tests -p 'test_*.py'",
     "test:mcp": "node tests/test-mcp.mjs",
+    "test:install": "node tests/test-install-mcp.mjs",
     "test:ui": "node tests/test-mcp-ui.mjs",
-    "test": "npm run test:unit && npm run test:mcp && npm run test:ui"
+    "test": "npm run test:unit && npm run test:mcp && npm run test:install && npm run test:ui"
   },
   "devDependencies": {
     "playwright": "1.58.2"

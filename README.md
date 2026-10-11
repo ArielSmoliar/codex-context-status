@@ -24,19 +24,16 @@ This project was verified on macOS with Codex desktop 26.1007.21159. Its local l
 
 ## Install
 
-Clone this repository and run these commands from its root:
+Clone a trusted revision of this repository and run these commands from its root:
 
 ```sh
-npm ci --prefix mcp --ignore-scripts
-python3 mcp/build_widget.py
-mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-ln -s "$PWD" "${CODEX_HOME:-$HOME/.codex}/skills/context-status"
-codex mcp add context-status \
-  --env "CONTEXT_STATUS_PYTHON=$(command -v python3)" \
-  -- "$(command -v node)" "$PWD/mcp/server.mjs"
+python3 scripts/install.py
+python3 scripts/install.py --apply
 ```
 
-The skill link intentionally fails if a skill with that name already exists. For an existing installation, compare it with this checkout and retain any local changes before updating its link or files. Register the MCP server against the installation you intend to use.
+The first command previews changes without writing. Apply creates a managed copy in `${CODEX_HOME:-$HOME/.codex}/skills/context-status`. Then run the dependency and MCP setup commands printed by the helper. Inspect any existing MCP registration before replacing it; the helper leaves Codex configuration untouched. File installation alone does not verify runtime readiness or desktop support.
+
+For upgrades, run the same commands from the desired revision. Local edits stop an upgrade; extra files are preserved, and the previous installation is kept as a backup. Older copies require an explicit `--adopt` comparison; symlink installations are left untouched. See [installation and recovery](references/installation.md) for migration, conflicts, backups, and component-specific reload steps.
 
 If `$context-status` or the new MCP tool is unavailable, start a new turn or restart Codex. Then invoke:
 
@@ -44,7 +41,7 @@ If `$context-status` or the new MCP tool is unavailable, start a new turn or res
 $context-status
 ```
 
-The skill resolves the current chat ID and opens the inspector. New inspectors start with Auto-refresh on. Existing open views may retain older UI code until reopened. Keep the repository in place while the skill and MCP server reference it.
+The skill resolves the current chat ID and opens the inspector. New inspectors start with Auto-refresh on. Existing open views retain older UI code until reopened; Refresh updates telemetry only. Keep the installed copy in place while the skill and MCP server reference it. A developer using a symlink must also retain its source checkout.
 
 To unregister the server, run `codex mcp remove context-status`. Removing the skill link is a separate action.
 
