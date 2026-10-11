@@ -123,6 +123,17 @@ try{
  assert.equal(await frame.locator('[data-field="model-notice"]').isVisible(),false);
  assert.equal(await frame.locator('[data-chart="capacity"]').isVisible(),true);
  assert.equal(await frame.locator('[data-section="model-switches"] li').count(),1);
+ await sandbox.append({type:'event_msg',payload:{type:'token_count',info:{last_token_usage:{future_counter:999}}}});
+ await frame.getByRole('button',{name:'Refresh context status'}).click();
+ await frame.getByText('A newer usage record has no readable counters. Refresh after valid telemetry is recorded.').waitFor();
+ assert.equal(await frame.locator('[data-chart="capacity"]').isVisible(),false);
+ await frame.getByText(/Timing unavailable/).waitFor();
+ assert.match(await frame.locator('[data-section="diagnostics"]').innerText(),/1 unreadable measurements/);
+ assert.equal(await raw.evaluate(()=>window.originalRoot===document.getElementById('context-status-inspector')),true);
+ await sandbox.append({type:'token_usage_record',payload:{thread_id:id,turn_id:'two',usage:{total_tokens:30000}}});
+ await frame.getByRole('button',{name:'Refresh context status'}).click();
+ await frame.getByText(/Continue this session/).waitFor();
+ assert.equal(await frame.locator('[data-chart="capacity"]').isVisible(),true);
  await fixture(0,false);
  await frame.getByRole('button',{name:'Refresh context status'}).click();
  await frame.getByText('The verified log contains no supported usage measurements.').waitFor();
@@ -130,6 +141,7 @@ try{
  assert.equal(await frame.locator('[data-section="model-switches"] li').count(),0);
  assert.deepEqual(errors,[]);
  console.log('PASS: model change waiting state, cache attribution, history, recovery, diagnostics without usage');
+ console.log('PASS: unreadable usage suppresses capacity advice, diagnostic evidence survives, valid telemetry recovers in place');
  console.log('PASS: auto-refresh enabled by default, timer refresh, same DOM, hidden pause/resume, off stops, 3-error stop, reenable recovery');
  console.log('PASS: real stdio refresh, same DOM, preserved details, no new chat messages, 80/90% guidance, retry, unavailable recovery, light/dark, 320px');
 }finally{await browser.close();await client.close();await sandbox.cleanup();}

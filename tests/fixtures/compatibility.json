@@ -1,0 +1,149 @@
+{
+  "evidence": "Hand-authored synthetic regression cases; not captured logs or proof of release compatibility.",
+  "cases": [
+    {
+      "name": "legacy-measurement",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 100, "cached_input_tokens": 80, "output_tokens": 20, "total_tokens": 120}, "model_context_window": 1000}}}
+      ],
+      "expect": {"status": "ok", "capacity_estimate": {"used_tokens": 120}, "compatibility": {"recorded_cli_version": "0.0.0-synthetic", "usage_formats": {"event_msg/token_count": {"records": 1, "readable_measurements": 1, "unreadable_measurements": 0}}}}
+    },
+    {
+      "name": "modern-without-limit",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "token_usage_record", "timestamp": "2026-01-01T00:00:00Z", "payload": {"thread_id": "fixture-chat", "turn_id": "one", "usage": {"input_tokens": 100, "cached_input_tokens": 80, "output_tokens": 20, "total_tokens": 120}}}
+      ],
+      "expect": {"status": "ok", "capacity_estimate": null, "usage_record_type": "token_usage_record", "compatibility": {"usage_formats": {"token_usage_record": {"readable_measurements": 1}}}}
+    },
+    {
+      "name": "mixed-format",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 100, "cached_input_tokens": 80, "output_tokens": 20, "total_tokens": 120}, "model_context_window": 1000}}},
+        {"type": "token_usage_record", "timestamp": "2026-01-01T00:00:00Z", "payload": {"thread_id": "fixture-chat", "turn_id": "one", "usage": {"total_tokens": 230}}}
+      ],
+      "expect": {"status": "ok", "capacity_estimate": {"used_tokens": 230}, "compatibility": {"usage_formats": {"event_msg/token_count": {"readable_measurements": 1}, "token_usage_record": {"readable_measurements": 1}}}}
+    },
+    {
+      "name": "absent-usage",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}}
+      ],
+      "expect": {"status": "unavailable", "usage_state": "not_observed", "compatibility": {"usage_formats": {"event_msg/token_count": {"records": 0}, "token_usage_record": {"records": 0}}}}
+    },
+    {
+      "name": "missing-cache",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 100, "output_tokens": 20}, "model_context_window": 1000}}}
+      ],
+      "expect": {"status": "ok", "latest_cache_hit_percent": null, "capacity_estimate": {"used_tokens": 120}}
+    },
+    {
+      "name": "unrecognized-outer-format",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "future_usage", "timestamp": "2026-01-01T00:00:00Z", "payload": {"PRIVATE-KEY": "PRIVATE-CONTENT", "tokens": 999}}
+      ],
+      "expect": {"status": "unavailable", "usage_state": "not_observed", "compatibility": {"usage_formats": {"event_msg/token_count": {"records": 0}, "token_usage_record": {"records": 0}}}}
+    },
+    {
+      "name": "unknown-counters",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 100, "cached_input_tokens": 80, "output_tokens": 20, "total_tokens": 120}, "model_context_window": 1000}}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"new_counter": "PRIVATE-CONTENT"}, "model_context_window": 1000}}}
+      ],
+      "expect": {"status": "ok", "usage_state": "awaiting_readable_usage", "capacity_estimate": null, "latest_request": {"total_tokens": 120}, "compatibility": {"usage_formats": {"event_msg/token_count": {"records": 2, "readable_measurements": 1, "unreadable_measurements": 1}}}}
+    },
+    {
+      "name": "wrong-info-shape",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 100, "cached_input_tokens": 80, "output_tokens": 20, "total_tokens": 120}, "model_context_window": 1000}}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": ["PRIVATE-CONTENT"]}}
+      ],
+      "expect": {"status": "ok", "usage_state": "awaiting_readable_usage", "capacity_estimate": null}
+    },
+    {
+      "name": "unreadable-first-record",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "token_usage_record", "timestamp": "2026-01-01T00:00:00Z", "payload": {"thread_id": "fixture-chat", "turn_id": "one", "usage": {"total_tokens": true, "input_tokens": -1, "output_tokens": "PRIVATE-CONTENT"}}}
+      ],
+      "expect": {"status": "unavailable", "usage_state": "awaiting_readable_usage", "compatibility": {"usage_formats": {"token_usage_record": {"records": 1, "unreadable_measurements": 1}}}}
+    },
+    {
+      "name": "quota-only-update",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 100, "cached_input_tokens": 80, "output_tokens": 20, "total_tokens": 120}, "model_context_window": 1000}}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": null, "rate_limits": {"primary": {"used_percent": 25}, "private": "PRIVATE-CONTENT"}}}
+      ],
+      "expect": {"status": "ok", "usage_state": "recorded", "capacity_estimate": {"used_tokens": 120}, "compatibility": {"usage_formats": {"event_msg/token_count": {"records": 2, "unreadable_measurements": 0}}}}
+    },
+    {
+      "name": "format-recovery",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 100, "cached_input_tokens": 80, "output_tokens": 20, "total_tokens": 120}, "model_context_window": 1000}}},
+        {"type": "token_usage_record", "timestamp": "2026-01-01T00:00:00Z", "payload": {"thread_id": "fixture-chat", "turn_id": "one", "usage": {}}},
+        {"type": "token_usage_record", "timestamp": "2026-01-01T00:00:00Z", "payload": {"thread_id": "fixture-chat", "turn_id": "one", "usage": {"total_tokens": 350}}}
+      ],
+      "expect": {"status": "ok", "usage_state": "recorded", "capacity_estimate": {"used_tokens": 350}, "compatibility": {"usage_formats": {"token_usage_record": {"records": 2, "readable_measurements": 1, "unreadable_measurements": 1}}}}
+    },
+    {
+      "name": "unreadable-prior-turn",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 100, "cached_input_tokens": 80, "output_tokens": 20, "total_tokens": 120}, "model_context_window": 1000}}},
+        {"type": "token_usage_record", "timestamp": "2026-01-01T00:00:00Z", "payload": {"thread_id": "fixture-chat", "turn_id": "older", "usage": {}}}
+      ],
+      "expect": {"status": "ok", "usage_state": "recorded", "capacity_estimate": {"used_tokens": 120}, "compatibility": {"usage_formats": {"token_usage_record": {"unreadable_measurements": 1}}}}
+    },
+    {
+      "name": "wrong-thread",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 100, "cached_input_tokens": 80, "output_tokens": 20, "total_tokens": 120}, "model_context_window": 1000}}},
+        {"type": "token_usage_record", "timestamp": "2026-01-01T00:00:00Z", "payload": {"thread_id": "other", "turn_id": "one", "usage": {"total_tokens": 999}}}
+      ],
+      "expect": {"status": "ok", "latest_request": {"total_tokens": 120}, "compatibility": {"usage_formats": {"token_usage_record": {"records": 0}}}}
+    },
+    {
+      "name": "untrusted-producer",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "PRIVATE-CONTENT/path"}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 100, "cached_input_tokens": 80, "output_tokens": 20, "total_tokens": 120}, "model_context_window": 1000}}}
+      ],
+      "expect": {"status": "ok", "compatibility": {"recorded_cli_version": "0.0.0-synthetic"}}
+    },
+    {
+      "name": "future-version-same-shape",
+      "records": [
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "0.0.0-synthetic", "cwd": "PRIVATE-DIRECTORY"}},
+        {"type": "turn_context", "timestamp": "2026-01-01T00:00:00Z", "payload": {"model": "synthetic-model", "turn_id": "one"}},
+        {"type": "session_meta", "timestamp": "2026-01-01T00:00:00Z", "payload": {"id": "fixture-chat", "cli_version": "999.0.0-synthetic"}},
+        {"type": "event_msg", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 100, "cached_input_tokens": 80, "output_tokens": 20, "total_tokens": 120}, "model_context_window": 1000}}}
+      ],
+      "expect": {"status": "ok", "compatibility": {"recorded_cli_version": "999.0.0-synthetic"}}
+    }
+  ]
+}

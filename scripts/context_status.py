@@ -12,6 +12,24 @@ import sys
 
 COUNTERS = ('input_tokens', 'cached_input_tokens', 'cache_write_input_tokens',
             'output_tokens', 'reasoning_output_tokens', 'total_tokens')
+USAGE_FORMATS = ('event_msg/token_count', 'token_usage_record')
+
+
+def cli_version(value):
+    # Producer metadata is optional and untrusted. Never expose arbitrary text.
+    return value if isinstance(value, str) and re.fullmatch(
+        r'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(?:[-+][A-Za-z0-9][A-Za-z0-9.-]{0,64})?', value) else None
+
+
+def format_evidence(formats, name, value):
+    item = formats[name]
+    item['records'] += 1
+    parsed = usage_counts(value)
+    if parsed is not None:
+        item['readable_measurements'] += 1
+    elif value is not None:
+        item['unreadable_measurements'] += 1
+    return parsed
 
 
 class TelemetryError(ValueError):
@@ -36,6 +54,24 @@ def diagnostics(data, failure=None):
                        'status': 'not_checked' if not verified else 'observed' if present else 'not_observed',
                        'detail': 'The session could not be verified or read.' if not verified else detail if present
                        else 'Not observed in this snapshot; this does not prove it is unsupported.'})
+    compatibility = data.get('compatibility') or {}
+    version = compatibility.get('recorded_cli_version')
+    checks.append({'label': 'Log producer version',
+                   'status': 'not_checked' if not verified else 'observed' if version else 'not_observed',
+                   'detail': 'The session could not be verified or read.' if not verified else
+                   f'Session-recorded CLI {version}; not the current desktop version.' if version else
+                   'No recognized version value in session metadata.'})
+    for name, item in compatibility.get('usage_formats', {}).items():
+        checks.append({'label': name, 'status': 'observed' if item['records'] else 'not_observed',
+                       'detail': f"{item['records']} records; {item['readable_measurements']} readable measurements; "
+                                 f"{item['unreadable_measurements']} unreadable measurements. "
+                                 'Absent or null measurements can be quota-only updates.'})
+    if data.get('usage_state') == 'awaiting_readable_usage':
+        checks.append({'label': 'Latest usage format', 'status': 'not_observed',
+                       'detail': 'A newer usage record has no readable counters. Capacity advice is withheld until valid telemetry returns.'})
+    if data.get('ignored_malformed_lines'):
+        checks.append({'label': 'Unreadable log lines', 'status': 'observed',
+                       'detail': f"{data['ignored_malformed_lines']} complete lines could not be decoded. This alone does not establish a version incompatibility."})
     return {'checks': checks, 'failure_code': failure,
             'note': 'Checks describe local recorded evidence, not a guarantee of compatibility with future Codex versions.'}
 
@@ -121,6 +157,11 @@ def inspect(path, thread, now=None):
     usage_epoch = None
     switches = []
     switch_count = 0
+    producer = None
+    unreadable_latest = False
+    incomplete_tail = False
+    formats = {name: {'records': 0, 'readable_measurements': 0, 'unreadable_measurements': 0}
+               for name in USAGE_FORMATS}
     with path.open('rb') as handle:
         # Bound this scan to the opening size without seeking twice per record.
         # Appended bytes belong to the next refresh; EOF also handles truncation.
@@ -129,6 +170,7 @@ def inspect(path, thread, now=None):
             line = handle.readline(remaining)
             remaining -= len(line)
             if not line.endswith(b'\n'):
+                incomplete_tail = bool(line)
                 break
             try:
                 record = json.loads(line)
@@ -143,6 +185,7 @@ def inspect(path, thread, now=None):
                 identity = payload.get('id')
                 if identity != thread:
                     raise TelemetryError('identity_mismatch', 'Session identity does not match the requested chat.')
+                producer = cli_version(payload.get('cli_version')) or producer
             elif kind == 'turn_context':
                 new_model = payload.get('model')
                 new_model = new_model if isinstance(new_model, str) and new_model else None
@@ -162,25 +205,33 @@ def inspect(path, thread, now=None):
                 compactions.append(at)
                 invalidated = True
             elif kind == 'token_usage_record' and payload.get('thread_id') == thread:
-                candidate = usage_counts(payload.get('usage'))
+                raw_usage = payload.get('usage')
+                candidate = format_evidence(formats, kind, raw_usage)
                 if candidate is not None and payload.get('turn_id') == current_turn:
                     latest = candidate
                     usage_at, usage_kind, usage_model = at, kind, model
                     usage_epoch = model_epoch
                     invalidated = False
+                    unreadable_latest = False
+                elif raw_usage is not None and candidate is None and payload.get('turn_id') == current_turn:
+                    invalidated = unreadable_latest = True
                 if isinstance(payload.get('thread_token_usage'), dict):
                     cumulative = counts(payload['thread_token_usage'])
                 if payload.get('turn_id') == current_turn and isinstance(payload.get('turn_token_usage'), dict):
                     turn_usage = counts(payload['turn_token_usage'])
             elif kind == 'event_msg' and payload.get('type') == 'token_count':
                 info = payload.get('info')
+                raw_usage = info.get('last_token_usage') if isinstance(info, dict) else info
+                candidate = format_evidence(formats, 'event_msg/token_count', raw_usage)
+                if raw_usage is not None and candidate is None:
+                    invalidated = unreadable_latest = True
                 if isinstance(info, dict):
-                    candidate = usage_counts(info.get('last_token_usage'))
                     if candidate is not None:
                         latest = candidate
                         usage_at, usage_kind, usage_model = at, 'event_msg/token_count', model
                         usage_epoch = model_epoch
                         invalidated = False
+                        unreadable_latest = False
                     if isinstance(info.get('total_token_usage'), dict):
                         cumulative = counts(info['total_token_usage'])
                     if 'model_context_window' in info:
@@ -198,10 +249,12 @@ def inspect(path, thread, now=None):
         raise TelemetryError('identity_unverified', 'No matching session identity found; refusing unverified telemetry.')
     result.update(model=model, reasoning_effort=effort, latest_usage_model=usage_model,
                   model_switches=switches, model_switch_count=switch_count,
-                  reported_context_window=window, ignored_malformed_lines=malformed)
+                  reported_context_window=window, ignored_malformed_lines=malformed,
+                  compatibility={'recorded_cli_version': producer, 'usage_formats': formats,
+                                 'incomplete_trailing_record': incomplete_tail})
     if latest is None:
         result['reason'] = 'The verified log contains no supported usage measurements.'
-        result['usage_state'] = 'not_observed'
+        result['usage_state'] = 'awaiting_readable_usage' if unreadable_latest else 'not_observed'
         result['diagnostics'] = diagnostics(result)
         return result
     footprint = latest['total_tokens']
@@ -222,12 +275,14 @@ def inspect(path, thread, now=None):
     result.update(status='ok', model=model, reasoning_effort=effort,
                   latest_usage_model=usage_model, usage_timestamp=usage_at,
                   usage_state=('awaiting_model_usage' if usage_epoch != model_epoch else
+                               'awaiting_readable_usage' if unreadable_latest else
                                'awaiting_post_compaction_usage' if invalidated else 'recorded'),
                   usage_age_seconds=age(usage_at, now), usage_record_type=usage_kind,
                   reported_context_window=window, window_timestamp=window_at, window_model=window_model,
                   latest_request=latest, current_turn_cumulative=turn_usage, thread_cumulative=cumulative,
                   capacity_estimate=estimate,
-                  capacity_unavailable_reason=('Compaction or a model change occurred after the last usage measurement.'
+                  capacity_unavailable_reason=('A newer usage record has no readable counters. Refresh after valid telemetry is recorded.'
+                      if unreadable_latest else 'Compaction or a model change occurred after the last usage measurement.'
                       if invalidated else 'Missing context limit or latest token count.' if estimate is None else None),
                   latest_cache_hit_percent=cache_ratio, latest_noncached_input_tokens=noncached,
                   compactions_observed=len(compactions), last_compaction_at=compactions[-1] if compactions else None,
