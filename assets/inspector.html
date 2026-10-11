@@ -27,6 +27,13 @@
     #context-status-inspector .cs-control:focus-visible { outline: 2px solid var(--viz-series-1); outline-offset: 3px; }
     #context-status-inspector .cs-handoff { width: 100%; min-height: 220px; resize: vertical; line-height: 1.5; }
     #context-status-inspector .cs-advice-title { font-weight: 600; }
+    #context-status-inspector .cs-intent { border: 0; padding: 0; margin: 12px 0; min-width: 0; }
+    #context-status-inspector .cs-intent legend { padding: 0; margin-bottom: 4px; }
+    #context-status-inspector .cs-intent-option { display: flex; align-items: baseline; gap: 9px; padding: 7px 0; cursor: pointer; }
+    #context-status-inspector .cs-intent-option input { flex: 0 0 auto; margin: 0; accent-color: var(--viz-series-1); }
+    #context-status-inspector .cs-intent-option input:focus-visible { outline: 2px solid var(--viz-series-1); outline-offset: 3px; }
+    #context-status-inspector .cs-intent-copy { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; }
+    @media (pointer: coarse) { #context-status-inspector .cs-intent-option { min-height: 44px; } }
     #context-status-inspector .cs-copy:hover:not(:disabled) { background: var(--muted); }
     #context-status-inspector .cs-copy:active:not(:disabled) { border-color: var(--viz-series-1); }
     @media (max-width: 420px) {
@@ -66,16 +73,23 @@
     <div class="cs-compaction text-small text-muted" data-field="compaction"></div>
   </div>
   <section class="cs-advice" aria-label="Session advice">
-    <div class="cs-line">
-      <span class="cs-label">Session advice</span>
-      <label class="text-small" for="context-next-step">Next step
-        <select class="cs-control" id="context-next-step" data-action="session-intent">
-          <option value="continue">Continue this task</option>
-          <option value="large">A large step in this task</option>
-          <option value="unrelated">An unrelated task</option>
-        </select>
+    <div class="cs-label">Session advice</div>
+    <fieldset class="cs-intent" data-section="session-intent" aria-describedby="context-intent-note">
+      <legend class="text-small">Next step</legend>
+      <label class="cs-intent-option">
+        <input type="radio" name="context-session-intent" value="continue" checked aria-labelledby="context-intent-continue-label" aria-describedby="context-intent-continue">
+        <span class="cs-intent-copy"><span id="context-intent-continue-label">Continue this task</span><span class="text-small text-muted" id="context-intent-continue">Keep working on the same problem.</span></span>
       </label>
-    </div>
+      <label class="cs-intent-option">
+        <input type="radio" name="context-session-intent" value="large" aria-labelledby="context-intent-large-label" aria-describedby="context-intent-large">
+        <span class="cs-intent-copy"><span id="context-intent-large-label">A large step in this task</span><span class="text-small text-muted" id="context-intent-large">Start substantial work, such as a refactor or reading many files.</span></span>
+      </label>
+      <label class="cs-intent-option">
+        <input type="radio" name="context-session-intent" value="unrelated" aria-labelledby="context-intent-unrelated-label" aria-describedby="context-intent-unrelated">
+        <span class="cs-intent-copy"><span id="context-intent-unrelated-label">An unrelated task</span><span class="text-small text-muted" id="context-intent-unrelated">Switch to a different topic; a fresh chat is usually best.</span></span>
+      </label>
+    </fieldset>
+    <p class="text-small text-muted" id="context-intent-note">These choices only adjust the advice. They do not start a chat or run a task.</p>
     <p class="cs-advice-title" data-field="session-guidance"></p>
     <p class="text-small" data-field="session-reason"></p>
     <p class="text-small text-muted">Advisory 80% / 90% checkpoints, not Codex’s compaction threshold. Recorded usage excludes unreported work; task size is not predicted.</p>
@@ -164,7 +178,7 @@
         row.append(swatch,label,value); section('capacity-legend').appendChild(row);
       }
     }
-    const intent = root.querySelector('[data-action="session-intent"]');
+    const intent = section('session-intent');
     const handoffPrompt = el('handoff-prompt');
     const handoffStage = root.querySelector('[data-action="handoff-stage"]');
     const copyHandoff = root.querySelector('[data-action="copy-handoff"]');
@@ -204,12 +218,13 @@ Reviewed handoff:
     handoffStage.addEventListener('change', selectHandoffPrompt);
     selectHandoffPrompt();
     function renderAdvice() {
+      const nextStep = intent.querySelector('input:checked').value;
       const estimate = data.capacity_estimate;
       const limit = data.reported_context_window;
       const valid = data.status === 'ok' && !String(data.usage_state || '').startsWith('awaiting_') && estimate && numeric(estimate.used_tokens) && numeric(limit) && limit > 0;
       const ratio = valid ? estimate.used_tokens / limit : null;
       let title, reason;
-      if (intent.value === 'unrelated') {
+      if (nextStep === 'unrelated') {
         title = 'Start a new session for the new task';
         reason = 'Your next task is unrelated. A separate chat keeps its instructions focused. Save a handoff here if you will return to this work.';
       } else if (ratio === null) {
@@ -225,17 +240,17 @@ Reviewed handoff:
         reason = 'Estimated headroom is low. Save a handoff before substantial work and switch at a natural stopping point. A small finishing step can stay here.';
       } else if (ratio >= .8) {
         title = 'Prepare a handoff';
-        reason = intent.value === 'large'
+        reason = nextStep === 'large'
           ? 'You are planning a large step with limited estimated headroom. Save a handoff and consider doing that step in a new chat.'
           : 'Continue focused work, then switch at the next task boundary. Capture decisions and the next action while they are available.';
-      } else if (intent.value === 'large') {
+      } else if (nextStep === 'large') {
         title = 'Plan the next step before continuing';
         reason = 'Recorded capacity has room, but the size of your next step is unknown. Break it into checkpoints and prepare a handoff if it will introduce substantial new material.';
       } else {
         title = 'Continue this session';
         reason = 'Recorded capacity has room for continued work on this task. Reassess at the next task boundary or before adding substantial new material.';
       }
-      if (valid && numeric(data.compactions_observed) && data.compactions_observed > 0 && intent.value !== 'unrelated') {
+      if (valid && numeric(data.compactions_observed) && data.compactions_observed > 0 && nextStep !== 'unrelated') {
         reason += ' Compaction appears in this log; confirm that key constraints are still understood. Its count alone does not require a new chat.';
       }
       // Do not repeatedly announce advice during background polling.

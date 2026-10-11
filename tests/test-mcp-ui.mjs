@@ -142,10 +142,19 @@ try{
  assert.deepEqual(errors,[]);
  const advice=frame.locator('[data-field="session-guidance"]');
  const reason=frame.locator('[data-field="session-reason"]');
- const intent=frame.getByLabel('Next step');
+ const intent=frame.getByRole('group',{name:'Next step'});
+ const chooseIntent=value=>intent.getByRole('radio',{name:{continue:'Continue this task',large:'A large step in this task',unrelated:'An unrelated task'}[value],exact:true}).check();
+ // Descriptions stay visible before choosing, and native arrow keys update advice.
+ assert.equal(await frame.getByText('Keep working on the same problem.',{exact:true}).isVisible(),true);
+ assert.equal(await frame.getByText('Start substantial work, such as a refactor or reading many files.',{exact:true}).isVisible(),true);
+ assert.equal(await frame.getByText('Switch to a different topic; a fresh chat is usually best.',{exact:true}).isVisible(),true);
+ await intent.locator('input[value="continue"]').focus();
+ await page.keyboard.press('ArrowDown');
+ assert.equal(await intent.locator('input:checked').inputValue(),'large');
+ await chooseIntent('continue');
  // Advice and handoff remain usable even with no measurements.
  assert.equal(await advice.innerText(),'Timing unavailable');
- await intent.selectOption('unrelated');
+ await chooseIntent('unrelated');
  assert.equal(await advice.innerText(),'Start a new session for the new task');
  await frame.getByText('Handoff checklist & prompts',{exact:true}).click();
  const prompt=frame.locator('#context-handoff-prompt');
@@ -185,7 +194,7 @@ try{
  await fixture(60000);
  await frame.getByRole('button',{name:'Refresh context status'}).click();
  await frame.getByText('60.0% used · 40,000 remaining',{exact:true}).waitFor();
- assert.equal(await intent.inputValue(),'unrelated');
+ assert.equal(await intent.locator('input:checked').inputValue(),'unrelated');
  assert.equal(await advice.innerText(),'Start a new session for the new task');
  assert.equal(await frame.locator('[data-section="handoff-details"]').getAttribute('open'),'');
  assert.equal(await prompt.inputValue(),resumeText);
@@ -193,7 +202,7 @@ try{
  await toggle.check();
  await fixture(70000);await page.clock.runFor(15000);
  await frame.getByText('70.0% used · 30,000 remaining',{exact:true}).waitFor();
- assert.equal(await intent.inputValue(),'unrelated');
+ assert.equal(await intent.locator('input:checked').inputValue(),'unrelated');
  assert.equal(await frame.locator('[data-section="handoff-details"]').getAttribute('open'),'');
  assert.equal(await prompt.inputValue(),resumeText);
  assert.equal(await stage.inputValue(),'resume');
@@ -201,9 +210,9 @@ try{
  await stage.selectOption('prepare');
  assert.equal(await prompt.inputValue(),promptText);
  assert.equal(await frame.locator('[data-field="handoff-copy-status"]').innerText(),'');
- await intent.selectOption('large');
+ await chooseIntent('large');
  assert.equal(await advice.innerText(),'Plan the next step before continuing');
- await intent.selectOption('continue');
+ await chooseIntent('continue');
  for(const [used,title] of [[79999,'Continue this session'],[80000,'Prepare a handoff'],[89999,'Prepare a handoff'],[90000,'Start a new session soon'],[110000,'Start a new session soon']]){
    await fixture(used);
    await frame.getByRole('button',{name:'Refresh context status'}).click();
@@ -215,7 +224,7 @@ try{
  await fixture(85000);
  await frame.getByRole('button',{name:'Refresh context status'}).click();
  await advice.filter({hasText:'Prepare a handoff'}).waitFor();
- await intent.selectOption('large');
+ await chooseIntent('large');
  assert.match(await reason.innerText(),/large step with limited estimated headroom/);
  // All waiting states suppress capacity advice; never use the old estimate.
  for(const [state,expected] of [['awaiting_model_usage','model changed'],['awaiting_post_compaction_usage','Compaction was recorded'],['awaiting_readable_usage','unreadable']]){
@@ -225,7 +234,7 @@ try{
    await page.evaluate(result=>document.querySelector('iframe').contentWindow.postMessage({jsonrpc:'2.0',method:'ui/notifications/tool-result',params:result},'*'),result);
    await reason.filter({hasText:expected}).waitFor();
    assert.equal(await advice.innerText(),'Timing unavailable');
-   assert.equal(await intent.inputValue(),'large');
+   assert.equal(await intent.locator('input:checked').inputValue(),'large');
  }
  const compacted=await client.callTool({name:'read_context_status',arguments:{thread_id:id}});
  compacted.structuredContent.compactions_observed=4;
@@ -234,7 +243,7 @@ try{
  assert.equal(await advice.innerText(),'Prepare a handoff');
  await frame.getByText('Token accounting & provenance',{exact:true}).click();
  await frame.getByText('Telemetry checks & model changes',{exact:true}).click();
- await intent.focus();
+ await intent.locator('input:checked').focus();
  for(const width of [800,320]){
    await page.setViewportSize({width,height:1100});
    for(const theme of ['light','dark']){
@@ -251,7 +260,7 @@ try{
  const template=await readFile(new URL('../assets/inspector.html',import.meta.url),'utf8');
  await fallback.setContent(template.replace('@@CONTEXT_STATUS_DATA@@',JSON.stringify({status:'unavailable',reason:'No local log'})));
  assert.equal(await fallback.locator('[data-field="session-guidance"]').innerText(),'Timing unavailable');
- await fallback.getByLabel('Next step').selectOption('unrelated');
+ await fallback.getByRole('radio',{name:/An unrelated task/}).check();
  assert.equal(await fallback.locator('[data-field="session-guidance"]').innerText(),'Start a new session for the new task');
  await fallback.getByText('Handoff checklist & prompts',{exact:true}).focus();
  await fallback.keyboard.press('Enter');
