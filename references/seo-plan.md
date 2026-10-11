@@ -52,11 +52,11 @@ supports listing canonical, fully qualified URLs. Keep these signals consistent.
 | Action | Owner | Status / evidence |
 | --- | --- | --- |
 | Page public, no sign-in required | Maintainer | Verified October 11; public access explicitly approved. |
-| GitHub contains website source and preview link | Maintainer | PR #10; merge status must be checked before treating `main` as current. |
+| GitHub contains website source and preview link | Maintainer | PR #10 merged October 11 at `b297cef527f0c15e17d8f17ada77f95516a23527`. |
 | Metadata, canonical, sitemap, robots, social image | Maintainer | Live and verified October 11; all six non-HTML assets match source bytes. |
 | Unknown URL returns an actual 404 | Maintainer / hosting platform | Verified October 11: nonexistent path returns HTTP 404 with our noindex error page. |
 | GitHub About website | Maintainer | Set to the public landing URL October 11. |
-| Search Console property ownership | Maintainer's Google account | NOT SET UP. No verification token or authenticated Search Console access supplied. |
+| Search Console property ownership | Maintainer's Google account | IN PROGRESS. URL-prefix property created; Google-issued HTML tag added to the home page. Ownership confirmation is pending. |
 | Sitemap submission and URL Inspection | Maintainer | PENDING verified property and live-file checks. |
 | Indexing / impressions / clicks | Google / measured in Search Console | UNKNOWN. A successful deployment does not establish indexing. |
 

@@ -25,6 +25,8 @@ The [SEO plan](../references/seo-plan.md) defines positioning, crawl checks,
 Search Console setup, a first-month measurement cadence, and publishing ownership.
 Regenerate `social-card.png` with `node scripts/render_social_card.mjs` when needed.
 Search Console verification and actual indexing remain separate from deployment.
+Keep the Google-issued `google-site-verification` meta tag in the home page across
+future deployments; Google periodically checks it to retain ownership verification.
 
 ## Design choices
 
