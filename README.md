@@ -69,6 +69,21 @@ The MCP server runs locally over stdio. It reads the exact selected session, ver
 
 This is a personal local tool, not a multi-user service. Do not expose it through a public tunnel or network endpoint. It relies on the local account's filesystem access, not remote-user authentication.
 
+## Try the validation kit
+
+The [validation guide](references/validation.md) includes pinned-candidate install
+instructions, a synthetic walkthrough, six handoff scenarios, and a three-person
+pilot protocol. Generate an offline kit into a new directory:
+
+```sh
+python3 scripts/prepare_validation.py --output /tmp/context-status-trial
+```
+
+Open the generated `demo.html` and `protocol.md`. Generation makes no model calls
+and reads no chats. It does **not** establish handoff quality: model trials and
+outside-user adoption remain unverified. Use the [results template](references/validation-results.md)
+to keep baseline, assisted, and synthetic observations separate.
+
 ## Development
 
 ```sh
