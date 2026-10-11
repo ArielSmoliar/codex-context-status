@@ -2,6 +2,8 @@
 
 A local context inspector for Codex desktop, with horizontal capacity and cache bars, in-place refresh, and guidance for when to prepare a session handoff.
 
+[Explore the capabilities and interactive examples](https://codex-context-status.major-cabin-5392.chatgpt.site).
+
 ## What it shows
 
 - Estimated context usage and remaining capacity from the latest recorded request.
@@ -85,6 +87,15 @@ and reads no chats. It does **not** establish handoff quality. The first
 six synthetic cases; real-task effectiveness and outside-user adoption remain
 unverified. Use the [results template](references/validation-results.md)
 to keep baseline, assisted, and synthetic observations separate.
+
+The [three-person pilot packet](references/pilot/README.md) has participant setup
+instructions, a proposed trial order, an invitation draft, and private scorecard
+templates. Its P01–P03 slots are placeholders, not enrolled users.
+
+The [new-user landing page source](site/README.md) provides a capability tour,
+interactive synthetic examples, and pinned installation commands.
+The [SEO plan](references/seo-plan.md) covers search intent, technical setup,
+Search Console verification, and the first month of measurement.
 
 ## Development
 

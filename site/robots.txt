@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://codex-context-status.major-cabin-5392.chatgpt.site/sitemap.xml

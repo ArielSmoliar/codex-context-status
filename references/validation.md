@@ -176,6 +176,10 @@ Do not force action simply to reduce exchange counts.
 
 ## Three-person pilot
 
+The [prepared facilitator packet](pilot/README.md) includes participant instructions,
+a pinned candidate, an invitation draft, and a two-transition scorecard. P01–P03
+are placeholders; no participants are enrolled by preparing these materials.
+
 Recruitment is a maintainer task; no participants are enrolled by this kit. Each
 person attempts installation and two comparable transitions: their usual method
 and the product-assisted method. Alternate order where practical and record it.

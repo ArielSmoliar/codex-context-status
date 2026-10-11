@@ -1,0 +1,11 @@
+// Render only synthetic artwork. This uses no browser profile or chat data.
+import {chromium} from 'playwright';
+import {resolve} from 'node:path';
+const browser=await chromium.launch({headless:true,...(process.env.CHROME_EXECUTABLE_PATH?{executablePath:process.env.CHROME_EXECUTABLE_PATH}:{})});
+try{
+  const page=await browser.newPage({viewport:{width:1200,height:630},deviceScaleFactor:1});
+  await page.setContent(`<!doctype html><html lang="en"><meta charset="utf-8"><style>
+    *{box-sizing:border-box}body{margin:0;background:#dcefed;color:#163634;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:58px 68px}header{font-size:25px;font-weight:650;letter-spacing:-1px}main{display:grid;grid-template-columns:1.2fr 1fr;gap:60px;align-items:center;margin-top:68px}h1{font-size:68px;font-weight:550;letter-spacing:-4px;line-height:1.04;margin:0}p{font-size:20px;line-height:1.5;margin-top:25px;color:#425f5d}.inspector{background:#f8fdfb;border:1px solid #a8c8c2;border-radius:14px;padding:28px 30px}.label{font-size:16px;margin-bottom:27px;font-weight:600}.bar{height:42px;background:#e0e9e6;display:flex}.bar span:first-child{width:36%;background:#246968}.bar span:last-child{width:3%;background:#91b4c5}.caption{display:flex;justify-content:space-between;font-size:12px;color:#526d67;margin-top:10px}.advice{background:#eaf5f1;margin-top:27px;padding:18px;font-size:15px;border-radius:5px}.small{font-size:11px;color:#526d67;margin-top:24px}footer{margin-top:56px;font-size:14px;color:#425f5d}
+    </style><header>▥ &nbsp;context-status</header><main><div><h1>Visibility into<br>your Codex<br>session.</h1><p>Recorded context. Clearer next steps.</p></div><div class="inspector"><div class="label">Context capacity · estimated</div><div class="bar"><span></span><span></span></div><div class="caption"><span>Used</span><span>Remaining capacity</span></div><div class="advice">↗ &nbsp;Keep the next step in view.</div><div class="small">Illustrative example · No live telemetry</div></div></main><footer>Local telemetry &nbsp; / &nbsp; In-place refresh &nbsp; / &nbsp; Reviewed handoffs</footer></html>`);
+  await page.screenshot({path:resolve('site/social-card.png')});
+}finally{await browser.close();}
