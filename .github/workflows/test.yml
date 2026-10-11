@@ -35,9 +35,12 @@ jobs:
       - run: npm ci --prefix mcp --ignore-scripts
       - run: npx playwright install --with-deps chromium
       - run: npm run build
-      - name: Check generated inspector
-        run: git diff --exit-code -- mcp/inspector.html
+      - name: Check generated inspector and plugin
+        run: git diff --exit-code -- mcp/inspector.html plugins/context-status
       - run: npm test
       - run: npm run test:landing
+      - name: Install pinned Codex CLI for isolated plugin lifecycle tests
+        run: npm install --global @openai/codex@0.160.0 --ignore-scripts
+      - run: npm run test:plugin
       - name: Synthetic benchmark smoke check
         run: npm run benchmark -- --sizes-mib 1 --repeats 1

@@ -6,6 +6,12 @@ Refresh performance: added repeatable synthetic benchmarks and reduced per-recor
 
 Installation and upgrades: preview-first managed copies, hash-based conflict detection, explicit adoption checks, staged replacement with retained backups, and component-specific reload guidance. MCP registration remains a separate, reviewable setup step.
 
+GitHub plugin distribution: generated self-contained skill and local stdio MCP
+package, bundled JavaScript dependencies, a repo marketplace, and Codex-managed
+install/upgrade/removal. See [plugin lifecycle and standalone migration](references/plugin.md).
+The lifecycle test uses real Codex commands and synthetic telemetry in an isolated
+home; desktop rendering and new-user adoption still need pilot evidence.
+
 Compatibility foundation: documented live evidence separately from synthetic fixtures, exposed sanitized producer/format evidence, and withheld capacity advice after unreadable newer usage. See the [matrix](references/compatibility.md).
 
 Session advice: task-intent controls, explicit waiting-state guidance, and a copyable handoff prompt with manual-copy fallback are implemented. Preparation and resume prompts now cover both sides of the transition, including current-state checks and the distinction between merged and installed work. They have browser workflow coverage; fresh-chat effectiveness across real tasks is still unverified. See the [evaluation scenarios](references/handoffs.md#evaluating-a-handoff).

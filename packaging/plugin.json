@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "context-status",
+  "version": "0.1.0",
+  "description": "Inspect your Codex session's recorded context capacity, cache reuse, and handoff guidance locally.",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Context Status",
+        "shortDescription": "Visibility into your local Codex session",
+        "developerName": "Ariel Smoliar",
+        "category": "Productivity",
+        "capabilities": ["Read"],
+        "websiteURL": "https://github.com/ArielSmoliar/codex-context-status",
+        "defaultPrompt": ["Show the context-status inspector for this chat."],
+        "brandColor": "#267986"
+      }
+    }
+  }
+}

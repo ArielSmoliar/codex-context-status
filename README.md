@@ -30,6 +30,28 @@ See the [compatibility matrix](references/compatibility.md) for live release evi
 
 ## Install
 
+### Codex plugin (GitHub distribution)
+
+The plugin bundles the skill, local MCP server, and inspector. With Node 20+,
+Python 3.10+, and a Codex CLI supporting `plugin add` (tested on 0.160.0):
+
+```sh
+codex plugin marketplace add ArielSmoliar/codex-context-status --ref main
+codex plugin add context-status@codex-context-status
+```
+
+Restart Codex if needed, select the Context Status skill, and open the inspector.
+No npm setup or manual MCP registration is needed. Dependencies are bundled;
+telemetry reads stay local. The installed skill may appear as
+`context-status:context-status`.
+
+See [plugin installation, upgrades, rollback, and removal](references/plugin.md).
+Existing standalone users should follow its migration steps before enabling the
+plugin to avoid duplicate skills and server registrations. The plugin does not
+modify those separate installations automatically.
+
+### Standalone skill (alternative)
+
 Clone a trusted revision of this repository and run these commands from its root:
 
 ```sh
@@ -105,6 +127,7 @@ npm ci --prefix mcp --ignore-scripts
 npx playwright install chromium
 npm run build
 npm test
+npm run test:plugin # requires Codex CLI 0.160.0; uses an isolated synthetic home
 ```
 
 Use `CHROME_EXECUTABLE_PATH` to test with an existing Chromium/Chrome binary instead of Playwright's downloaded browser. Run commands from the repository root.
@@ -113,6 +136,17 @@ Tests use temporary, synthetic session logs. They never need your Codex account 
 
 Run `npm run benchmark` to measure reader and one-shot CLI latency using temporary synthetic logs. See [refresh performance](references/performance.md) for paired comparisons, measured results, and scope. The reader still scans a fresh size-bounded snapshot on each refresh.
 
-The generated `mcp/inspector.html` is committed for direct installation. After editing the shared template, bridge, or CSS, rebuild and commit the generated file. CI checks that it matches its sources.
+The generated `mcp/inspector.html` and `plugins/context-status/` are committed for
+direct installation. After editing runtime files, rebuild with `npm run build`
+and commit generated changes. CI checks source parity. Edit manifests under
+`packaging/`; do not edit generated plugin files. The plugin build uses an explicit
+file allowlist and preserves bundled dependencies' license notices.
+
+`test:plugin` runs actual Codex install, upgrade, rollback, and removal commands
+against a temporary Git marketplace. It verifies host discovery, offline stdio
+reads, in-place refresh data, cache cleanup, and preservation of synthetic logs
+and unrelated configuration. It makes no model calls or changes to your installed
+skill. This is CLI/app-server integration coverage, not a claim that every desktop
+release renders MCP Apps correctly.
 
 See [telemetry details](references/telemetry.md), [MCP implementation](mcp/README.md), and the [development roadmap](ROADMAP.md).

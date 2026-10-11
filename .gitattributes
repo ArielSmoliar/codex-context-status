@@ -1,0 +1,2 @@
+# Built from canonical source by npm run build; keep PR reviews focused on source.
+plugins/context-status/** linguist-generated=true
