@@ -1,8 +1,27 @@
 # Codex Context Status
 
-A local context inspector for Codex desktop, with horizontal capacity and cache bars, in-place refresh, and guidance for when to prepare a session handoff.
+Visibility into your Codex session: recorded context usage, a refreshable inspector,
+and prompts to help carry work into a fresh chat.
 
 [Explore the capabilities and interactive examples](https://codex-context-status.major-cabin-5392.chatgpt.site).
+
+**Current plugin version: 0.1.2.** Install directly from GitHub using the commands
+below. A public OpenAI directory listing is not required for this installation
+route. This is an independent community project; directory submission remains
+pending, with local MCP eligibility awaiting OpenAI guidance. See the
+[recorded submission status](references/submission/README.md).
+
+## When to use it
+
+Open the inspector when you want visibility into a long-running local Codex chat.
+It updates automatically while visible; you do not need to invoke it at the end
+of every session. When continuing the same task in a fresh chat, use its optional
+handoff prompts to prepare, review, and transfer a summary. If the task is finished
+or you are returning to the same chat, no handoff is required.
+
+The plugin does not automatically open in every chat, detect when you leave, or
+transfer history. It estimates recorded usage; it does not diagnose declining
+model quality or guarantee that starting a fresh chat improves results.
 
 ## What it shows
 
@@ -44,10 +63,28 @@ codex plugin marketplace add ArielSmoliar/codex-context-status --ref main
 codex plugin add context-status@codex-context-status
 ```
 
-Restart Codex if needed, select the Context Status skill, and open the inspector.
-No npm setup or manual MCP registration is needed. Dependencies are bundled;
-telemetry reads stay local. The installed skill may appear as
-`context-status:context-status`.
+Restart Codex if needed, select the Context Status skill, or ask:
+
+> Show the context-status inspector for this chat.
+
+The installed skill may appear as `context-status:context-status`. Auto-refresh
+starts on and checks every 15 seconds while the inspector is visible. No npm setup
+or manual MCP registration is needed; JavaScript dependencies are bundled, while
+Node.js and Python must already be installed and available to Codex.
+
+The commands above track `main`. For the supervised 0.1.2 pilot, use the
+[participant instructions](references/pilot/participant.md) instead: they pin the
+reviewed product commit and explain how to verify it.
+
+To update an existing GitHub plugin installation:
+
+```sh
+codex plugin marketplace upgrade codex-context-status
+codex plugin add context-status@codex-context-status
+```
+
+Restart Codex and reopen the inspector after updating. Refresh reads telemetry;
+it does not load new UI code. A marketplace pinned to a commit stays pinned.
 
 See [plugin installation, upgrades, rollback, and removal](references/plugin.md).
 Existing standalone users should follow its migration steps before enabling the
@@ -85,7 +122,7 @@ The 80% and 90% checkpoints are advisory, not Codex's compaction trigger. Choose
 
 Expand **Handoff checklist & prompts** for a checklist and prompt to paste into the current chat. The prompt asks for established goals, decisions, files, verification, blockers, and the next action. Copying does not generate a summary, send a message, or open a chat. Review the resulting handoff before pasting it into a new session. If clipboard access is unavailable, the text is selected for manual copying.
 
-Choose **1. Current chat** to prepare the handoff or **2. New chat** for the resume prompt. Add your reviewed handoff to the resume prompt before sending it. The resume prompt asks the next chat to reconcile the summary with current workspace state before continuing. Your intent, prompt selection, and expanded details persist through refreshes within the current view. See [handoff and resume guidance](references/handoffs.md).
+Choose **1. Current chat** to prepare the handoff or **2. New chat** for the resume prompt. Add your reviewed handoff to the resume prompt before sending it. The resume prompt asks the next chat to reconcile the summary with current workspace state before continuing. In 0.1.2, it also asks the final response to distinguish previously completed work, actions performed now, remaining work, and verification limits—including merged source versus installed or deployed state when relevant. Your intent, prompt selection, and expanded details persist through refreshes within the current view. See [handoff and resume guidance](references/handoffs.md).
 
 Model changes are detected when the new model appears in recorded turn metadata, typically after the next message. The previous context limit is cleared, and capacity is withheld until fresh usage and a new limit exist. Older cache measurements retain their model label. The inspector records a switch count and the latest ten transitions; these reflect the available log, not model-picker clicks. Cache-miss causes remain unavailable.
 
@@ -94,6 +131,11 @@ Telemetry checks distinguish observed data, fields not observed yet, and checks 
 ## Privacy and scope
 
 The MCP server runs locally over stdio. It reads the exact selected session, verifies its identity, and returns allowlisted telemetry. The UI has no external network dependencies. The backend does not modify session logs or return conversation content. Display data omits account quotas and source paths.
+
+No separate API key or hosted telemetry service is needed. GitHub is contacted
+to download or update the package. The initial tool result is available to Codex
+like other tool results; local processing does not change Codex's own data
+handling. See the [privacy notice](docs/privacy.md).
 
 This is a personal local tool, not a multi-user service. Do not expose it through a public tunnel or network endpoint. It relies on the local account's filesystem access, not remote-user authentication.
 
@@ -109,15 +151,25 @@ python3 scripts/prepare_validation.py --output /tmp/context-status-trial
 ```
 
 Open the generated `demo.html` and `protocol.md`. Generation makes no model calls
-and reads no chats. It does **not** establish handoff quality. The first
-[agent-reviewed CLI smoke run](references/validation-smoke-2026-10-11.md) passed all
-six synthetic cases; real-task effectiveness and outside-user adoption remain
-unverified. Use the [results template](references/validation-results.md)
-to keep baseline, assisted, and synthetic observations separate.
+and reads no chats. It does **not** establish handoff quality. The initial
+[agent-reviewed CLI smoke run](references/validation-smoke-2026-10-11.md) passed six
+synthetic cases. A later [0.1.1 dry run](references/pilot-dry-run-2026-10-11.md)
+passed five of six and found a merged-versus-installed reporting gap. One focused
+rerun with the revised 0.1.2 resume prompt passed that scenario's four criteria;
+this was not a new six-case pass or a human trial. Real-task effectiveness and
+outside-user adoption remain unverified. Use the
+[results template](references/validation-results.md) to keep baseline, assisted,
+and synthetic observations separate.
 
 The [three-person pilot packet](references/pilot/README.md) has participant setup
 instructions, a proposed trial order, an invitation draft, and private scorecard
-templates. Its P01–P03 slots are placeholders, not enrolled users.
+templates. We are preparing a three-person pilot for daily Codex desktop users:
+roughly 30–45 minutes, possibly split across task boundaries, plus a seven-day
+reuse check-in. Its P01–P03 slots are placeholders, not enrolled users. Compare
+your usual transition method with the assisted workflow; setup problems and
+non-use are useful feedback too. To express interest, [open a GitHub issue](https://github.com/ArielSmoliar/codex-context-status/issues)
+with a brief description of how you use Codex, or use the private contact in the
+[privacy notice](docs/privacy.md). Do not post chat logs or personal telemetry.
 
 The [new-user landing page source](site/README.md) provides a capability tour,
 interactive synthetic examples, and pinned installation commands.
