@@ -7,18 +7,19 @@ separate result, not a substitute for these real-task observations.
 
 ## Candidate
 
-Use **plugin 0.1.1** at `da6671e2346ba88ef7320a598b43535ebc05a99f` for every installation.
-This is the merged PR #16 product commit. Its [CI run](https://github.com/ArielSmoliar/codex-context-status/actions/runs/38186260192)
-passed on **attempt 2**. The first attempt passed the functional lifecycle assertions
-but failed removing a temporary test folder. Record both the initial cleanup failure
-and successful rerun, not just the version.
+The proposed pilot candidate is **plugin 0.1.2** at `bd55ab5bdd87b7366baa533b4db4d7650e377bd3`.
+It adds explicit final-response reporting to the resume prompt. Its [CI run](https://github.com/ArielSmoliar/codex-context-status/actions/runs/38187574978)
+passed on attempt 1. Record that product gate result before any participant installs.
+Distribute this packet after the candidate PR is reviewed and merged. Do not use a
+moving branch or silently upgrade an earlier participant installation.
 
 The product candidate stays frozen even if `main` advances. This refreshed packet
 is a separate documentation revision: record its full commit SHA on each scorecard.
-Use this packet's [participant instructions](participant.md), not the old pilot
+Use this packet's [participant instructions](participant.md), not the earlier candidate
 instructions bundled in the candidate's source checkout. Do not change the product
 pin merely to pick up newer documentation. Historical six-case smoke results remain
-at their original candidate and are not new 0.1.1 results.
+at their original candidate and are not new 0.1.2 results. See the [dry-run and focused rerun report](../pilot-dry-run-2026-10-11.md)
+for the observed reporting gap and the narrowly scoped follow-up.
 
 Only macOS desktop 26.1007.21159 has prior live verification. Record each person's
 OS, desktop build, CLI, Node, Python, installation mode, and default/custom data
@@ -64,7 +65,9 @@ to share sanitized observations; agreement to participate is not publication con
 Give each person [participant instructions](participant.md) and a private copy of
 the [scorecard](scorecard.md). Keep completed cards outside any repository and
 outside the receiving chat's workspace. Replace the alias and planned order in
-each copy. The participant scores their work; the facilitator records help given.
+each copy. For usual-method-first sessions, give the assisted setup/handoff guidance
+after the baseline where practical; record any earlier exposure. The participant
+scores their work; the facilitator records help given.
 
 ## Run the session
 
@@ -80,7 +83,9 @@ each copy. The participant scores their work; the facilitator records help given
 4. For each transition, have the participant privately predeclare the important
    facts and observable expectations on their scorecard. Keep this rubric, the
    packet, and the other task's history out of the receiving model's inputs.
-5. Time the pinned GitHub plugin installation from the participant instructions. Record prerequisite setup
+5. Time the pinned GitHub plugin installation from the participant instructions. Use
+   their read-only cached-commit check; the marketplace listing alone omits the ref.
+   Record prerequisite setup
    separately. Observe without coaching initially; when help is needed, provide it
    and record exactly when and what. Do not leave someone stuck to protect a metric.
 6. Score the actual preparation and receiver behavior separately. Preserve original

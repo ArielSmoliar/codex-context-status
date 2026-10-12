@@ -9,11 +9,11 @@ are recorded in the [October 11 report](validation-smoke-2026-10-11.md).
 
 ## Prepare a candidate
 
-The current three-person pilot installs **plugin 0.1.1** at full product SHA
-`da6671e2346ba88ef7320a598b43535ebc05a99f`. Its
-[CI gate](https://github.com/ArielSmoliar/codex-context-status/actions/runs/38186260192)
-passed on attempt 2; attempt 1 passed lifecycle assertions but failed temporary
-fixture cleanup. A candidate is not a broadly validated release.
+The current three-person pilot installs **plugin 0.1.2** at full product SHA
+`bd55ab5bdd87b7366baa533b4db4d7650e377bd3`. Its
+[CI gate](https://github.com/ArielSmoliar/codex-context-status/actions/runs/38187574978)
+passed on attempt 1; the candidate PR must also be reviewed and merged before
+distributing the packet. A candidate is not a broadly validated release.
 
 Use the [participant installation instructions](pilot/participant.md) for the
 pinned GitHub marketplace commands, prerequisites, existing-install review,
@@ -34,7 +34,9 @@ Record **two revisions**: the frozen product install SHA and the full commit SHA
 of the pilot packet/kit source used for the trial. This updated protocol is newer
 than the product candidate. Do not use the older pilot instructions in that
 candidate's source checkout or change the product pin to obtain newer instructions.
-Historical smoke results keep their original revision; they are not 0.1.1 results.
+Historical smoke results keep their original revision; they are not 0.1.2 results.
+The [dry-run report](pilot-dry-run-2026-10-11.md) separates the six 0.1.1 scenarios
+from the focused revised-prompt rerun.
 
 ## Generate an offline kit
 

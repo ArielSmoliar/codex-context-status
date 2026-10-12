@@ -12,9 +12,9 @@ scorecard into the receiving model; they are for you.
 
 ## Before the assisted task: install
 
-This pilot uses **plugin 0.1.1**, pinned to `da6671e2346ba88ef7320a598b43535ebc05a99f`.
+This pilot uses **plugin 0.1.2**, pinned to `bd55ab5bdd87b7366baa533b4db4d7650e377bd3`.
 Use these participant instructions; the source checkout at that product commit
-contains older standalone-pilot instructions. The facilitator records the revision
+contains earlier pilot instructions for a different candidate. The facilitator records the revision
 of this packet separately from the product being installed.
 
 Start recording installation time when you reach these instructions. Requirements:
@@ -45,22 +45,41 @@ If you already have context-status installed as a standalone skill, a manually
 registered MCP server, or a plugin/marketplace, stop and ask the facilitator to
 review it first. Preserve existing files and configuration. Record any migration
 or change of marketplace ref as an intervention; do not silently replace it or
-run both installations. The pinned [migration and recovery guide](https://github.com/ArielSmoliar/codex-context-status/blob/da6671e2346ba88ef7320a598b43535ebc05a99f/references/plugin.md)
+run both installations. The pinned [migration and recovery guide](https://github.com/ArielSmoliar/codex-context-status/blob/bd55ab5bdd87b7366baa533b4db4d7650e377bd3/references/plugin.md)
 explains how to retain and restore a standalone installation.
 
 For a new installation, run the first command and confirm it succeeds before
 running the second:
 
 ```sh
-codex plugin marketplace add ArielSmoliar/codex-context-status --ref da6671e2346ba88ef7320a598b43535ebc05a99f
+codex plugin marketplace add ArielSmoliar/codex-context-status --ref bd55ab5bdd87b7366baa533b4db4d7650e377bd3
 codex plugin add context-status@codex-context-status --json
 ```
 
-The install result should report version **0.1.1**. Confirm the marketplace was
+The install result should report version **0.1.2**. Confirm the marketplace was
 added with the exact commit above; a version number alone does not identify a
 commit. Retain command results locally. If the pin or version is different or
 cannot be verified, stop and ask for help. Do not run marketplace upgrades during
 the pilot. No npm installation or manual MCP registration is needed.
+
+Verify the cached marketplace commit with this read-only check (it prints only
+the commit SHA):
+
+```sh
+python3 - <<'VERIFY_PIN'
+import json, subprocess
+result = subprocess.check_output(
+    ["codex", "plugin", "marketplace", "list", "--json"], text=True)
+market = next(item for item in json.loads(result)["marketplaces"]
+              if item["name"] == "codex-context-status")
+print(subprocess.check_output(
+    ["git", "-C", market["root"], "rev-parse", "HEAD"], text=True).strip())
+VERIFY_PIN
+```
+
+The result must be `bd55ab5bdd87b7366baa533b4db4d7650e377bd3`.
+The marketplace listing alone does not display this commit. If the check errors
+or differs, stop and ask the facilitator; keep it as a recorded setup issue.
 
 Restart Codex if needed, open a local chat, and select the installed Context Status
 skill (it may appear as `context-status:context-status`), or ask “Show the
