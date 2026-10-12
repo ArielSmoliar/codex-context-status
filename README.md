@@ -100,8 +100,9 @@ This is a personal local tool, not a multi-user service. Do not expose it throug
 ## Try the validation kit
 
 The [validation guide](references/validation.md) includes pinned-candidate install
-instructions, a synthetic walkthrough, six handoff scenarios, and a three-person
-pilot protocol. Generate an offline kit into a new directory:
+instructions for plugin 0.1.1, a synthetic walkthrough, six handoff scenarios, and a
+three-person pilot protocol. Record the product pin separately from the kit-source
+revision; generating the kit does not install the plugin. Generate an offline kit into a new directory:
 
 ```sh
 python3 scripts/prepare_validation.py --output /tmp/context-status-trial

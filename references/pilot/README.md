@@ -7,22 +7,42 @@ separate result, not a substitute for these real-task observations.
 
 ## Candidate
 
-Use `b19f0a01a18c126a2c69615eef3f4285c73b2c61` for every installation. This is the
-reviewed PR #9 head, whose [CI run](https://github.com/ArielSmoliar/codex-context-status/actions/runs/38179557458)
-passed Node 20/Python 3.10 and Node 22/Python 3.12. The candidate is frozen even if
-`main` advances. Record any deviation and assess it separately. Only macOS desktop
-26.1007.21159 has prior live verification; record other builds as new evidence.
+Use **plugin 0.1.1** at `da6671e2346ba88ef7320a598b43535ebc05a99f` for every installation.
+This is the merged PR #16 product commit. Its [CI run](https://github.com/ArielSmoliar/codex-context-status/actions/runs/38186260192)
+passed on **attempt 2**. The first attempt passed the functional lifecycle assertions
+but failed removing a temporary test folder. Record both the initial cleanup failure
+and successful rerun, not just the version.
+
+The product candidate stays frozen even if `main` advances. This refreshed packet
+is a separate documentation revision: record its full commit SHA on each scorecard.
+Use this packet's [participant instructions](participant.md), not the old pilot
+instructions bundled in the candidate's source checkout. Do not change the product
+pin merely to pick up newer documentation. Historical six-case smoke results remain
+at their original candidate and are not new 0.1.1 results.
+
+Only macOS desktop 26.1007.21159 has prior live verification. Record each person's
+OS, desktop build, CLI, Node, Python, installation mode, and default/custom data
+home. A working CLI test is not proof of desktop rendering. The packaged MCP needs
+the default data directory; custom homes are an unavailable plugin result, not
+permission to move the participant's data. Any standalone fallback is a separate
+trial and does not enter the plugin-success count.
+
+The GitHub plugin is available independently of OpenAI's directory review. Version
+0.1.1 is uploaded as a draft; local command MCP submission support has been requested
+and escalated to a specialist. That is not approval or publication.
 
 ## Recruit and arrange
 
 Choose daily Codex desktop users who already restart long tasks. Prefer people
 who did not build this tool. Confirm their local desktop, OS, ability to install
 Node/Python dependencies, and two upcoming task boundaries. Record prior exposure
-to context-status. Names and contact details stay outside this repository.
+to context-status. Prefer new installations for this cohort; existing standalone
+or plugin users need a documented migration/ref review and restoration plan before
+changes. Count that assistance and report those attempts separately from clean installs. Names and contact details stay outside this repository.
 
 Invitation draft, for the maintainer to send when ready:
 
-> I’m testing context-status, an open-source context inspector and handoff aid for
+> I’m testing context-status, a community-maintained context inspector and handoff aid for
 > Codex desktop. Would you try installing it and continuing two comparable tasks
 > in fresh chats, once your usual way and once using its handoff prompts? Plan for
 > about 30–45 minutes, possibly split across natural task boundaries, plus a short
@@ -60,13 +80,16 @@ each copy. The participant scores their work; the facilitator records help given
 4. For each transition, have the participant privately predeclare the important
    facts and observable expectations on their scorecard. Keep this rubric, the
    packet, and the other task's history out of the receiving model's inputs.
-5. Time installation from the candidate instructions. Record prerequisite setup
+5. Time the pinned GitHub plugin installation from the participant instructions. Record prerequisite setup
    separately. Observe without coaching initially; when help is needed, provide it
    and record exactly when and what. Do not leave someone stuck to protect a metric.
 6. Score the actual preparation and receiver behavior separately. Preserve original
    handoffs locally when useful, but do not collect transcripts. A question can be
    the correct next action. Record any correction or assistance before transfer.
-7. Ask what they would use again, what felt unnecessary, and whether the meter
+7. Record installed version, pin verification, discovery/restart issues, and any
+   removal or restoration attempt. Do not upgrade between the assisted trial and
+   follow-up; if the participant chooses an update, record the deviation.
+8. Ask what they would use again, what felt unnecessary, and whether the meter
    influenced a decision. Do not lead with our desired answer or success thresholds.
 
 If installation is unavailable or fails, retain the attempt and its build in the

@@ -5,7 +5,8 @@ fields mean unknown, not success. Participant reviews any shared observations.
 
 ## Candidate and environment
 
-- Candidate full SHA / CI link / result / date:
+- Product version / full install SHA / CI link, attempt, result / date:
+- Pilot packet full SHA / kit-source full SHA (may differ from product):
 - Kit SOURCE.json hashes / checkout dirty? / kit generation status:
 - Participant alias / evaluator / OS / desktop build or CLI version:
 - Model / effort / trial date:
@@ -16,12 +17,18 @@ fields mean unknown, not success. Participant reviews any shared observations.
 
 ## Installation
 
-- Prerequisites ready? / time spent installing prerequisites:
+- Installation lane: GitHub plugin / standalone (report separately) / N/A
+- Prerequisites ready? / Node, Python, CLI versions / prerequisite setup time:
+- Data directory: default / custom / unknown (omit paths):
+- Prior installation / migration and restoration plan / help:
+- Marketplace result / exact pin verified? / installed version:
+- Skill/server discovery / restart / deviations or upgrades:
 - Start / stop / elapsed time with prerequisites ready:
 - Written instructions sufficient? / interventions:
 - Exact-chat binding checked? / refresh in place checked?:
 - Result: NOT RUN / working inspector / unavailable / failed
 - Failure point / sanitized reproduction / supported-build evidence:
+- Removal/restoration attempted? / result / unrelated settings preserved:
 
 ## Transition (copy this section for each condition)
 
@@ -56,7 +63,8 @@ fields mean unknown, not success. Participant reviews any shared observations.
 | Usual-method pilot transitions | 3 | | | | | 3 |
 | Product-assisted pilot transitions | 3 | | | | | 3 |
 
-- Installations working / attempted / within ten minutes unassisted:
+- Plugin installations working / attempted / within ten minutes unassisted:
+- Standalone or migration trials reported separately / reasons:
 - Product-assisted results within two exchanges with all critical facts preserved:
 - Unresolved prohibited-action failures (must be zero before reliability claims):
 - Seven-day follow-up: NOT RUN / dates / reuse yes-no-unknown / reasons:

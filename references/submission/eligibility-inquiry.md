@@ -1,6 +1,8 @@
 # Local MCP eligibility inquiry
 
-**Draft — not sent.** Recipient: OpenAI plugin support or the appropriate OpenAI representative.
+**Sent through the Help Center; escalated to a support specialist October 11, 2026.**
+Awaiting a substantive reply. This is the reusable inquiry text, not a support
+transcript; the actual exchange and account artifacts are kept private.
 No account identifiers, personal logs, or live telemetry are needed as attachments.
 
 **Subject: Local MCP support for Context Status — uploaded plugin draft**
@@ -30,9 +32,10 @@ Plugin ID: `plugins_6acc2135f1008191a51a1284f57fb595`
 
 Draft: https://platform.openai.com/plugins/manage/plugins_6acc2135f1008191a51a1284f57fb595
 
-The uploaded draft is version 0.1.0. A 0.1.1 metadata correction is being prepared
-for the subtitle, icons, listing description, and required support/policy URLs.
-It does not change the local stdio architecture. No review has been submitted.
+The uploaded draft is version 0.1.1. Its metadata corrections cleared the reported
+listing findings, but the local command MCP blocker remains and the skill scan was
+last observed pending. The local stdio architecture is unchanged. No review has
+been submitted.
 
 Could you route this to the team supporting local MCP submissions and clarify:
 

@@ -3,7 +3,8 @@
 Status: **NOT RUN**. Copy outside version control and outside model workspaces.
 Keep this record private. Do not share it with either receiving model.
 
-- Candidate: `b19f0a01a18c126a2c69615eef3f4285c73b2c61`
+- Candidate: plugin 0.1.1 at `da6671e2346ba88ef7320a598b43535ebc05a99f`
+- Pilot packet full commit SHA / candidate CI URL, attempt, result:
 - Planned order: PLANNED_ORDER
 - Actual order / reason for any change:
 - Enrollment agreed? / session date / prior context-status exposure:
@@ -15,11 +16,17 @@ Keep this record private. Do not share it with either receiving model.
 
 - Prerequisites ready? / prerequisite setup minutes:
 - Start / stop / elapsed with prerequisites ready:
-- Installer result / dependency setup / MCP registration / restart needed:
+- Data directory: default / custom / unknown (do not record its path):
+- Prior setup: none / standalone / plugin; migration or restoration plan:
+- Marketplace add result / exact pin verified? / installed version:
+- Skill/server discovery / restart needed / new inspector opened:
+- Any deviation, standalone fallback, or upgrade (separate from plugin success):
 - Correct chat identity verified? / timestamps advanced? / Refresh stayed in place?:
 - Help: when, what, and from whom (including unscripted help):
 - Result: NOT RUN / WORKING / UNAVAILABLE / FAILED
 - If unsuccessful: step, sanitized symptom, recovery, and assisted trial status:
+
+- Removal/restoration attempted? / outcome / help / unrelated settings preserved:
 
 ## Usual-method transition
 

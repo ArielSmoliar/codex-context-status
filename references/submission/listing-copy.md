@@ -3,7 +3,7 @@
 Listing copy included in the 0.1.1 package candidate, conditional on eligibility.
 The individual publisher identity was verified during direct upload. Productivity
 remains the selected category; the expanded description clarifies the main purpose
-for revalidation. Upload is not OpenAI approval.
+and the reported metadata findings cleared on revalidation. Upload is not OpenAI approval.
 
 | Field | Proposed value |
 | --- | --- |
@@ -14,7 +14,7 @@ for revalidation. Upload is not OpenAI approval.
 | Category | Productivity — confirm against the dashboard |
 | Website | https://codex-context-status.major-cabin-5392.chatgpt.site/ |
 | Support | https://github.com/ArielSmoliar/codex-context-status/issues |
-| Privacy policy / terms | `docs/privacy.md` and `docs/terms.md` at their manifest main-branch URLs; awaiting review and publication |
+| Privacy policy / terms | `docs/privacy.md` and `docs/terms.md` at their manifest main-branch URLs; public after PR #16 merged |
 | Primary / composer icon | `./assets/logo.svg` |
 | Dark primary / composer icon | `./assets/logo-dark.svg` |
 

@@ -9,48 +9,49 @@ are recorded in the [October 11 report](validation-smoke-2026-10-11.md).
 
 ## Prepare a candidate
 
-The maintainer chooses a **full commit SHA whose CI passed** and supplies it to
-participants. A candidate is not a broadly validated release. Use the GitHub source
-archive for that SHA or clone and detach explicitly:
+The current three-person pilot installs **plugin 0.1.1** at full product SHA
+`da6671e2346ba88ef7320a598b43535ebc05a99f`. Its
+[CI gate](https://github.com/ArielSmoliar/codex-context-status/actions/runs/38186260192)
+passed on attempt 2; attempt 1 passed lifecycle assertions but failed temporary
+fixture cleanup. A candidate is not a broadly validated release.
+
+Use the [participant installation instructions](pilot/participant.md) for the
+pinned GitHub marketplace commands, prerequisites, existing-install review,
+exact-chat verification, Refresh checks, and removal. The plugin needs Node 20+,
+Python 3.10+ with timezone data, a Codex CLI with plugin support, local desktop
+MCP Apps, and the default `~/.codex` data directory. Custom-home attempts are
+UNAVAILABLE for this plugin; never move personal data to fit a trial.
+A [standalone installation](installation.md) is a separate evaluation lane and
+must not count as plugin installation success. GitHub distribution does not depend
+on OpenAI directory approval.
+
+Only macOS desktop 26.1007.21159 has prior live verification. Linux CI and CLI
+lifecycle tests are not desktop compatibility evidence. See
+[compatibility](compatibility.md). Retain failed/unavailable installation attempts
+and facilitator help in the record.
+
+Record **two revisions**: the frozen product install SHA and the full commit SHA
+of the pilot packet/kit source used for the trial. This updated protocol is newer
+than the product candidate. Do not use the older pilot instructions in that
+candidate's source checkout or change the product pin to obtain newer instructions.
+Historical smoke results keep their original revision; they are not 0.1.1 results.
+
+## Generate an offline kit
+
+The maintainer supplies a reviewed full **kit-source SHA** containing this protocol.
+Use a source archive at that SHA or clone and detach explicitly:
 
 ```sh
 git clone https://github.com/ArielSmoliar/codex-context-status.git
 cd codex-context-status
-git checkout --detach FULL_CANDIDATE_COMMIT_SHA
+git checkout --detach FULL_KIT_SOURCE_COMMIT_SHA
 git rev-parse HEAD
 git status --short
 ```
 
-Replace the placeholder before running. The checkout should be clean. Do not use a
-moving `main` as the candidate identity. Record the SHA, CI URL/result, and date in
-the results sheet. Release publication is a separate maintainer action; automated
-publishing and marketplace packaging are deferred.
-
-Requirements: Git for synthetic repositories, Python 3.10+ with timezone data,
-Node 20+ for the product, a local Codex desktop with MCP Apps, and accessible local
-telemetry. The currently documented live verification is macOS desktop
-26.1007.21159; other versions need their own evidence. Linux CI is not desktop
-compatibility evidence. See [compatibility](compatibility.md).
-
-Install using the existing preview-first helper:
-
-```sh
-python3 scripts/install.py
-python3 scripts/install.py --apply
-```
-
-Run the dependency and MCP registration commands printed by the helper after
-reviewing existing registration. Preserve custom settings. Reopen/restart the
-component identified by [installation guidance](installation.md), then invoke
-`$context-status` in a supported local chat. Confirm the inspector belongs to that
-chat, has interpretable recorded timestamps, and Refresh updates it in place.
-Installation alone does not prove desktop support. Keep unavailable states and
-build differences in the result; do not silently exclude failed installations.
-The helper retains upgrade backups; use the linked recovery instructions if needed.
-
-## Generate an offline kit
-
-From the candidate checkout, choose a **new directory with an existing parent**,
+Replace the placeholder before running. Use a clean checkout and record the source
+SHA and CI result. Do not use moving `main` as an evidence identity. Git and Python
+3.10+ are needed for generation. Choose a **new directory with an existing parent**,
 preferably outside every repository. For example, if this path does not exist:
 
 ```sh
@@ -63,19 +64,24 @@ not reuse them; select a new destination. No model calls are part of generation.
 
 ```text
 context-status-trial/
-  SOURCE.json           candidate SHA/dirty flag and exact input hashes
+  SOURCE.json           kit-source SHA/dirty flag and exact input hashes
   protocol.md           this guide (reference links refer to the source checkout)
   results.md            blank, NOT RUN evaluator record
   demo.html             offline synthetic inspector walkthrough
-  resume-template.txt   current canonical resume prompt
+  resume-template.txt   canonical resume prompt from the kit source
   facilitator/01..06/   source history, rubric, prompt, canned resume example
     source-workspace/   preparation state (absent in the missing-handoff case)
   receivers/01..06/     only the current synthetic workspace, with opaque names
 ```
 
-If `SOURCE.json` reports a dirty checkout or no commit, the kit is a local working
-draft, not a reproducible pinned candidate. Record that honestly or regenerate
-after checking out a clean candidate. Hashes identify the exact generation inputs.
+`SOURCE.json` identifies generation inputs, not the installed plugin or its pin.
+Record the installed product separately. If it reports a dirty checkout or no
+commit, the kit is a local working draft; regenerate from a clean reviewed source
+for reproducible trials. If the kit's prompts or inspector differ from the product
+candidate, record that difference and do not claim the synthetic trial tested the
+installed version. The participant packet stays in `references/pilot/` in the
+source checkout; it is not copied into the generated kit.
+
 Do not publish generated folders or participant notes; keep them outside version
 control. To reset a trial, generate a new kit instead of editing the old evidence.
 
