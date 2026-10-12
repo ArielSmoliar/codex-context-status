@@ -1,6 +1,6 @@
 # Try context-status in your workflow
 
-Context-status is an open-source inspector for local Codex desktop chats. It shows
+Context-status is a community-maintained inspector for local Codex desktop chats. It shows
 recorded context estimates and offers prompts for preparing and resuming a handoff.
 We want to learn whether installation works for you and whether it helps you carry
 work into a fresh chat. Problems and non-use are useful results.
@@ -12,41 +12,59 @@ scorecard into the receiving model; they are for you.
 
 ## Before the assisted task: install
 
-Start recording installation time when you reach these candidate instructions.
-Prerequisites are Git, Node.js 20+, Python 3.10+ with timezone data, the Codex CLI
-for MCP registration, and a local Codex desktop with MCP Apps support and accessible
-local telemetry. Record time spent obtaining prerequisites separately. Prior live
-verification covers macOS desktop 26.1007.21159; your build may differ.
+This pilot uses **plugin 0.1.1**, pinned to `da6671e2346ba88ef7320a598b43535ebc05a99f`.
+Use these participant instructions; the source checkout at that product commit
+contains older standalone-pilot instructions. The facilitator records the revision
+of this packet separately from the product being installed.
 
-In a folder where you keep checkouts, run:
+Start recording installation time when you reach these instructions. Requirements:
+Git, Node.js 20+, Python 3.10+ with IANA timezone data, a Codex CLI with `plugin add`
+(tested on 0.160.0), and local Codex desktop with MCP Apps and readable local logs.
+Record prerequisite setup time separately. Prior live verification covers macOS
+desktop 26.1007.21159; record your actual build, including unsuccessful attempts.
 
-```sh
-git clone https://github.com/ArielSmoliar/codex-context-status.git codex-context-status-pilot-b19f0a0 &&
-cd codex-context-status-pilot-b19f0a0 &&
-git checkout --detach b19f0a01a18c126a2c69615eef3f4285c73b2c61 &&
-git rev-parse HEAD &&
-git status --short
-```
-
-The SHA should match and status should be empty. If the destination folder already
-exists, use a new folder name rather than replacing it. Once those checks match, preview the installation:
+Check prerequisites from the environment that launches Codex:
 
 ```sh
-python3 scripts/install.py
+git --version
+node --version
+python3 --version
+python3 -c "from zoneinfo import ZoneInfo; ZoneInfo('UTC')"
+codex --version
+codex plugin add --help
 ```
 
-If the preview reports conflicts, stop and ask for help; retain your existing
-settings. If it is correct:
+If a check fails, ask for help and record the intervention before continuing.
+The plugin needs the default `~/.codex` data directory. If your Codex installation
+uses a custom `CODEX_HOME`, stop this plugin installation attempt and record it as
+UNAVAILABLE with the reason “custom data directory.” Do not change your data
+location to fit the pilot. A separate standalone trial may be arranged, but does
+not count as a successful plugin installation.
+
+If you already have context-status installed as a standalone skill, a manually
+registered MCP server, or a plugin/marketplace, stop and ask the facilitator to
+review it first. Preserve existing files and configuration. Record any migration
+or change of marketplace ref as an intervention; do not silently replace it or
+run both installations. The pinned [migration and recovery guide](https://github.com/ArielSmoliar/codex-context-status/blob/da6671e2346ba88ef7320a598b43535ebc05a99f/references/plugin.md)
+explains how to retain and restore a standalone installation.
+
+For a new installation, run the first command and confirm it succeeds before
+running the second:
 
 ```sh
-python3 scripts/install.py --apply
+codex plugin marketplace add ArielSmoliar/codex-context-status --ref da6671e2346ba88ef7320a598b43535ebc05a99f
+codex plugin add context-status@codex-context-status --json
 ```
 
-Run the dependency command printed by the helper. Inspect any existing
-`context-status` MCP registration before running its printed registration command;
-preserve custom settings. Restart Codex if needed, open a local chat, and invoke
-`$context-status`. Full [setup, reload, and recovery instructions](https://github.com/ArielSmoliar/codex-context-status/blob/b19f0a01a18c126a2c69615eef3f4285c73b2c61/references/installation.md)
-are part of this candidate. Ask for help whenever needed; record that intervention.
+The install result should report version **0.1.1**. Confirm the marketplace was
+added with the exact commit above; a version number alone does not identify a
+commit. Retain command results locally. If the pin or version is different or
+cannot be verified, stop and ask for help. Do not run marketplace upgrades during
+the pilot. No npm installation or manual MCP registration is needed.
+
+Restart Codex if needed, open a local chat, and select the installed Context Status
+skill (it may appear as `context-status:context-status`), or ask “Show the
+context-status inspector for this chat.” Record any restart or discovery trouble.
 
 Confirm the inspector belongs to this chat and its Telemetry checks show verified
 identity. After a completed response, check that a new recorded timestamp appears
@@ -88,6 +106,22 @@ For the **assisted transition**:
 Stop and tell the facilitator if it changes unrelated work, claims checks it did
 not run, makes a decision you left open, or acts beyond your request. You decide
 how to recover your work. Keep ordinary workspace protections in place.
+
+## After the trial
+
+You may keep the pinned plugin for the seven-day follow-up or remove it at any
+point. Choosing removal is valid feedback. For a new installation created only
+for this pilot:
+
+```sh
+codex plugin remove context-status@codex-context-status
+codex plugin marketplace remove codex-context-status
+```
+
+Close the inspector and restart Codex if needed. Removal does not delete chats,
+logs, or saved handoffs. If you had an existing setup, ask the facilitator to
+restore its recorded state using the migration/recovery guide instead. Record
+removal or restoration failures; do not delete unrelated configuration.
 
 ## What to share
 

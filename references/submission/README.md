@@ -1,15 +1,15 @@
 # OpenAI plugin submission readiness
 
 Updated October 11, 2026. **Draft uploaded; not submitted for review or published.**
-The direct upload flow accepted plugin 0.1.0 under the verified individual
+The direct upload flow accepted plugin 0.1.1 under the verified individual
 publisher identity. [The draft](https://platform.openai.com/plugins/manage/plugins_6acc2135f1008191a51a1284f57fb595)
 reports the local command MCP server as a blocking finding.
 
 This directory contains supporting review documents, not an uploadable plugin
-ZIP. The generated package is `plugins/context-status/`. Version 0.1.1 prepares
-the listing corrections; its policy pages must be approved and available at the
-manifest's URLs before a replacement upload. GitHub installation remains the
-supported distribution path. No OpenAI inquiry has been sent.
+ZIP. The generated package is `plugins/context-status/`. Version 0.1.1 was uploaded
+after PR #16 merged and the policy pages became public. The reported metadata
+findings cleared; the local command MCP blocker remains. GitHub installation
+remains available independently of directory review.
 
 ## Resolve eligibility before submitting for review
 
@@ -25,9 +25,10 @@ Sources checked on the preparation date:
 - [Plugin guidelines: data handling and testing](https://developers.openai.com/plugins/plugin-guidelines)
 - [Upload, listing, and review requirements](https://developers.openai.com/plugins/deploy/submission)
 
-See [the ready-to-send inquiry](eligibility-inquiry.md). No recipient has been
-selected and no message has been sent. The proposed next step is for the maintainer
-to send it to an existing OpenAI contact or obtain the appropriate support route.
+The [eligibility inquiry](eligibility-inquiry.md) was sent through the Help Center
+and escalated to a support specialist on October 11, 2026. A substantive reply is
+pending; no case number was displayed. Keep the support transcript and account
+artifacts private. Escalation is not eligibility approval.
 
 ## Materials prepared
 
@@ -47,18 +48,18 @@ to send it to an existing OpenAI contact or obtain the appropriate support route
 | --- | --- |
 | Eligibility for local transport, log access, and Codex-only scope | Awaiting OpenAI guidance; blocks the ordinary submission path. |
 | Verified developer identity | Direct upload used Individual — ARIEL SMOLIAR; Generate Runbook is already published in the same account. |
-| Listing metadata | Version 0.1.1 adds a 30-character subtitle, long description, and bundled light/dark listing and composer icons. Portal revalidation is pending. |
+| Listing metadata | Version 0.1.1 adds a 30-character subtitle, long description, and bundled light/dark listing and composer icons. Those reported metadata findings cleared on revalidation. |
 | Product and support URLs | Manifest now points to the public product website and GitHub issues. |
-| Privacy and terms URLs | `docs/privacy.md` and `docs/terms.md` prepared for publisher review. Manifest uses their stable main-branch GitHub URLs; the private contact is confirmed; review and merge/publication must happen before upload. |
+| Privacy and terms URLs | `docs/privacy.md` and `docs/terms.md` are public at the manifest's main-branch GitHub URLs after PR #16 merged; the related portal findings cleared. |
+| Skill scan | Last observed checking 0 of 1; no completed result or approval is claimed. |
 | First-party license | No root LICENSE file was found at the candidate revision. Maintainer must choose licensing; do not infer MIT from third-party notices. |
 | Desktop compatibility | One documented macOS build. Default `~/.codex` only for the plugin; custom-home users need the standalone installer for in-place Refresh. |
 | Reviewer cases and recording | Eight cases drafted; reviewer executions and a video remain NOT RUN / NOT RECORDED. |
 | Independent-user evidence | P01–P03 pilot is prepared, not run. It is not a documented portal requirement, but remains useful release evidence. |
 
-Before a replacement upload, review the policies and merge the pages so their main-branch URLs resolve, and validate the package.
-The local MCP declaration must remain included. Do not submit a skills-only
-placeholder to bypass the command-MCP finding. Revalidate the uploaded 0.1.1
-metadata and preserve any remaining findings in the inquiry.
+Await support guidance on the remaining eligibility questions and recheck the skill
+scan before any review submission. The local MCP declaration must remain included.
+Do not submit a skills-only placeholder to bypass the command-MCP finding.
 
 The [review guide](review-guide.md) still requires agreed synthetic reviewer
 trials and a recording. Upload validation, policy attestations, review approval,
