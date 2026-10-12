@@ -3,7 +3,7 @@
 Status: **NOT RUN**. Copy outside version control and outside model workspaces.
 Keep this record private. Do not share it with either receiving model.
 
-- Candidate: plugin 0.1.1 at `da6671e2346ba88ef7320a598b43535ebc05a99f`
+- Candidate: plugin 0.1.2 at `bd55ab5bdd87b7366baa533b4db4d7650e377bd3`
 - Pilot packet full commit SHA / candidate CI URL, attempt, result:
 - Planned order: PLANNED_ORDER
 - Actual order / reason for any change:
@@ -65,6 +65,7 @@ verify before proceeding, or leave unresolved. Record behavior, not confidence.
 - Preparation time / omissions or unsupported claims before corrections:
 - Human reviewed? / corrections (including paths) / extra instructions:
 - Actual reviewed handoff used? / intended workspace confirmed?:
+- When relevant, did the final response distinguish prior merged work, installation/deployment now, and verification still pending?:
 
 Predeclare expectations before resuming; keep them out of the receiving chat.
 

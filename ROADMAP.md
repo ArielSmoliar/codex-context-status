@@ -6,7 +6,7 @@ chat. No participants are enrolled and no pilot results are claimed.
 
 ## Available now
 
-- **GitHub plugin 0.1.1:** a self-contained skill and local stdio MCP server with
+- **GitHub plugin distribution:** a self-contained skill and local stdio MCP server with
   bundled JavaScript dependencies and Codex-managed install, upgrade, rollback,
   and removal. The plugin currently needs the default `~/.codex` data directory.
   See [installation and migration](references/plugin.md).
@@ -27,15 +27,18 @@ chat. No participants are enrolled and no pilot results are claimed.
 
 | Priority | Work | Evidence needed to move on |
 | --- | --- | --- |
-| 1. Run the plugin pilot | Recruit P01–P03; use the pinned 0.1.1 participant instructions, record prerequisites, installation help, two comparable transitions per person, and seven-day voluntary reuse. | All attempts retained, baseline and assisted outcomes separate, and participant-approved sanitized findings. Targets: three working inspectors, two unassisted installs within ten minutes with prerequisites ready, and two assisted transitions preserving critical facts within two exchanges. These are directional targets, not reliability claims. |
+| 1. Run the plugin pilot | Recruit P01–P03; use the reviewed, pinned 0.1.2 participant instructions, record prerequisites, installation help, two comparable transitions per person, and seven-day voluntary reuse. | All attempts retained, baseline and assisted outcomes separate, and participant-approved sanitized findings. Targets: three working inspectors, two unassisted installs within ten minutes with prerequisites ready, and two assisted transitions preserving critical facts within two exchanges. These are directional targets, not reliability claims. |
 | 2. Fix observed failures | Address setup/discovery obstacles first, then preparation or continuation failures. Add focused regression coverage for each reproduced defect. | Reproduce the reported issue without personal logs; verify the fix on the affected setup or scenario. Resolve prohibited-action failures before promoting handoff reliability. |
 | 3. Extend compatibility evidence | Verify additional desktop builds and operating systems using the existing checklist; retain unavailable states and the custom-home limitation. | A dated live check per claimed build in the [compatibility matrix](references/compatibility.md). CLI and synthetic tests alone do not establish desktop support. |
 | 4. Decide the next product investment | Use pilot reuse and failure evidence to choose what to build. Consider direct handoff access if handoff is reused while the meter is ignored; investigate the need if both go unused. | An explicit decision tied to observations, including unanswered follow-ups, rather than more speculative advice thresholds. |
 
-The pilot freezes product commit `da6671e2346ba88ef7320a598b43535ebc05a99f` (0.1.1).
-[Candidate CI](https://github.com/ArielSmoliar/codex-context-status/actions/runs/38186260192)
-passed on attempt 2 after a temporary-folder cleanup failure on attempt 1.
-Record the pilot packet/kit-source revision separately from the installed product.
+The proposed pilot candidate is plugin **0.1.2** at
+`bd55ab5bdd87b7366baa533b4db4d7650e377bd3`, adding an explicit final-response distinction
+between prior work, current actions, and remaining verification. Its [CI gate](https://github.com/ArielSmoliar/codex-context-status/actions/runs/38187574978)
+passed on attempt 1; PR review and merge remain required before distributing the packet. Record the
+packet/kit-source revision separately from the product. The [dry run and focused
+rerun](references/pilot-dry-run-2026-10-11.md) retain the original reporting failure;
+they do not establish a model reliability rate or participant success.
 Only one macOS desktop build has prior live verification; the pilot must still
 verify rendering and exact-chat Refresh for the actual installed candidate.
 
